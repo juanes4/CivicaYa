@@ -5,92 +5,509 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CívicaYa</title>
-  <link rel="stylesheet" href="/Project/css/estilos.css">
   <style>
-    .hero {
-      background: linear-gradient(120deg, #3f7d10, #7ab51d);
-      color: #fff;
-      padding: 48px 24px;
+    :root {
+      --verde: #7ac31f;
+      --verde-oscuro: #2e9e2e;
+      --verde-hero: #6cbf10;
+      --verde-texto: #1e6b1e;
+      --mostaza: #d9b000;
+      --amarillo: #f2d31b;
+      --gris: #444;
+      --gris-claro: #eee;
+      --morado: #6a1b9a;
+      --fondo: #f4f6f1;
+      --contenedor: 1100px;
     }
 
-    .hero-contenido {
-      max-width: 1100px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--fondo);
+      color: #222;
+      line-height: 1.4;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    ul,
+    ol {
+      list-style: none;
+    }
+
+    .contenedor {
+      max-width: var(--contenedor);
       margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ---------- 1. Barra superior verde ---------- */
+
+    .barra-superior {
+      position: relative;
+      z-index: 20;
+      height: 32px;
+      background: var(--verde);
+    }
+
+    .barra-superior .contenedor {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .barra-superior nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      height: 32px;
+    }
+
+    .barra-superior nav a {
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .barra-superior nav a:hover {
+      text-decoration: underline;
+    }
+
+    .cuenta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 48px;
+      padding: 0 18px 0 14px;
+      background: var(--mostaza);
+      border-radius: 0 0 12px 12px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.15;
+      text-transform: uppercase;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+    }
+
+    .cuenta:hover {
+      background: #c2a000;
+    }
+
+    .cuenta svg {
+      flex: none;
+    }
+
+    /* ---------- 2. Encabezado blanco ---------- */
+
+    .cabecera {
+      background: #fff;
+      min-height: 125px;
+      padding-top: 18px;
+    }
+
+    .cabecera-fila {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      min-height: 72px;
+    }
+
+    .logo {
+      font-family: 'Nunito', 'Varela Round', 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      color: #000;
+    }
+
+    .buscador {
+      display: flex;
+      align-items: center;
+      flex: 0 1 380px;
+      height: 38px;
+      padding-left: 18px;
+      background: var(--gris-claro);
+      border-radius: 999px;
+    }
+
+    .buscador input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font: inherit;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .buscador button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--verde);
+      cursor: pointer;
+    }
+
+    .buscador button:hover {
+      background: var(--verde-oscuro);
+    }
+
+    .metro-logo {
+      margin-left: auto;
+      width: 50px;
+      height: auto;
+    }
+
+    .menu {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      padding: 4px 0 6px;
+    }
+
+    .menu a {
+      color: var(--gris);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .menu a.desplegable::after {
+      content: ' ▾';
+    }
+
+    .menu a:hover,
+    .menu a:focus-visible {
+      color: var(--verde);
+    }
+
+    /* ---------- 3. Franja gris ---------- */
+
+    .franja {
+      padding: 12px 16px;
+      background: var(--gris);
+      color: #fff;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    /* ---------- 4. Carrusel ---------- */
+
+    .carrusel {
+      position: relative;
+      height: 395px;
+      overflow: hidden;
+      background: linear-gradient(90deg, var(--verde-oscuro), var(--verde-hero));
+      color: #fff;
+    }
+
+    .circulo {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+    }
+
+    .c1 { width: 90px; height: 90px; top: 28px; left: 3%; }
+    .c2 { width: 46px; height: 46px; top: 190px; left: 1%; }
+    .c3 { width: 130px; height: 130px; bottom: -40px; left: 9%; }
+    .c4 { width: 70px; height: 70px; top: -18px; right: 22%; }
+    .c5 { width: 120px; height: 120px; top: 60px; right: -30px; }
+    .c6 { width: 56px; height: 56px; bottom: 60px; right: 12%; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 0 90px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease, visibility 0.6s;
+    }
+
+    .slide.activa {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .slide-texto {
+      max-width: 780px;
+      text-align: center;
+    }
+
+    .slide h2 {
+      font-size: 44px;
+      font-weight: 800;
+      line-height: 1.15;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    .slide .subtitulo {
+      margin-top: 14px;
+      font-size: 28px;
+      font-weight: 400;
+    }
+
+    .boton-amarillo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 10px 14px 10px 26px;
+      background: var(--amarillo);
+      border-radius: 14px;
+      color: var(--verde-texto);
+      font-size: 20px;
+      font-weight: 800;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .boton-amarillo:hover {
+      background: #ffe23a;
+    }
+
+    .boton-amarillo .icono {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--verde-oscuro);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .slide-2 {
+      justify-content: center;
+    }
+
+    .slide-2 .slide-texto {
+      max-width: 520px;
+      text-align: left;
+    }
+
+    .slide-2 h2 {
+      font-size: 38px;
+    }
+
+    .slide-2 img {
+      align-self: flex-end;
+      height: 320px;
+      width: auto;
+      max-width: 45%;
+      object-fit: contain;
+    }
+
+    .flecha {
+      position: absolute;
+      top: 50%;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 64px;
+      margin-top: -32px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      opacity: 0.85;
+    }
+
+    .flecha:hover {
+      opacity: 1;
+    }
+
+    .flecha.anterior { left: 14px; }
+    .flecha.siguiente { right: 14px; }
+
+    .indicadores {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      z-index: 3;
+      display: flex;
+      gap: 10px;
+      transform: translateX(-50%);
+    }
+
+    .indicador {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .indicador[aria-current="true"] {
+      background: #fff;
+    }
+
+    .lema {
+      position: absolute;
+      right: 20px;
+      bottom: 12px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .lema b {
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--morado);
+      font-style: normal;
+    }
+
+    .lema img {
+      width: 30px;
+      height: auto;
+    }
+
+    /* ---------- Sección CívicaYa ---------- */
+
+    .civicaya {
+      padding: 44px 16px;
+      background: #fff;
+      border-bottom: 1px solid #e3e6dd;
+    }
+
+    .civicaya .contenedor {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 32px;
-      flex-wrap: wrap;
+      gap: 40px;
     }
 
-    .hero-texto {
-      flex: 1 1 380px;
-      max-width: 600px;
+    .civicaya-texto {
+      flex: 1 1 420px;
+      max-width: 580px;
     }
 
-    .hero h1 {
-      margin: 0 0 14px;
-      font-size: 2.2rem;
+    .civicaya-etiqueta {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 3px 14px;
+      border-radius: 999px;
+      background: var(--verde-oscuro);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
     }
 
-    .hero p {
-      margin: 0 0 26px;
-      font-size: 1.1rem;
+    .civicaya h2 {
+      margin-bottom: 12px;
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--verde-texto);
     }
 
-    .hero-acciones {
+    .civicaya p {
+      margin-bottom: 24px;
+      font-size: 17px;
+      color: #444;
+    }
+
+    .civicaya-acciones {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      align-items: center;
+      gap: 16px 22px;
     }
 
-    .hero .btn-morado {
-      background: var(--morado);
-      border-radius: 25px;
+    .civicaya .boton-amarillo {
+      margin-top: 0;
     }
 
-    .hero .btn-morado:hover {
-      background: #4a148c;
+    .civicaya .enlace-cuenta {
+      color: var(--verde-texto);
+      font-weight: 700;
+      text-decoration: underline;
     }
 
-    .hero .btn-claro {
-      background: transparent;
-      border-color: #fff;
-      border-radius: 25px;
-    }
-
-    .hero .btn-claro:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .hero img {
+    .civicaya img {
       flex: 0 1 340px;
       width: 340px;
       max-width: 100%;
       border-radius: 14px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ---------- Contenido debajo del carrusel ---------- */
+
+    main {
+      max-width: var(--contenedor);
+      margin: 0 auto;
+      padding: 40px 16px 56px;
     }
 
     main h2 {
-      margin: 0 0 18px;
+      margin-bottom: 18px;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 14px;
+      border: 2px solid var(--verde-texto);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--verde-texto);
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: #eef5e2;
     }
 
     .pasos {
-      list-style: none;
-      margin: 0 0 40px;
-      padding: 0;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
+      margin-bottom: 40px;
       counter-reset: paso;
     }
 
     .pasos li {
       counter-increment: paso;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
       padding: 20px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
     }
 
     .pasos li::before {
@@ -113,9 +530,6 @@
     }
 
     .puntos {
-      list-style: none;
-      margin: 0;
-      padding: 0;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
@@ -124,10 +538,10 @@
     .punto {
       display: flex;
       flex-direction: column;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
       overflow: hidden;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
     }
 
     .punto img {
@@ -135,68 +549,265 @@
       width: 100%;
       aspect-ratio: 16 / 9;
       object-fit: cover;
-      background: var(--verde-claro);
+      background: #eef5e2;
     }
 
     .punto-info {
-      flex: 1;
       display: flex;
+      flex: 1;
       flex-direction: column;
       gap: 4px;
       padding: 16px 18px 18px;
     }
 
     .punto-info h3 {
-      margin: 0;
       font-size: 1.1rem;
     }
 
     .punto-info p {
-      margin: 0 0 12px;
+      margin-bottom: 12px;
       color: #555;
       font-size: 0.92rem;
     }
 
     .punto-info .btn {
       margin-top: auto;
-      padding: 8px 14px;
-      font-size: 0.9rem;
     }
 
-    @media (max-width: 720px) {
-      .hero h1 {
-        font-size: 1.7rem;
+    .sin-resultados {
+      grid-column: 1 / -1;
+      padding: 24px;
+      color: #666;
+      text-align: center;
+    }
+
+    /* ---------- Responsive ---------- */
+
+    @media (max-width: 767px) {
+      .barra-superior nav {
+        gap: 12px;
       }
 
-      .hero img {
-        flex-basis: 100%;
+      .cabecera-fila {
+        flex-wrap: wrap;
+        gap: 12px 16px;
+        min-height: 0;
+      }
+
+      .logo {
+        font-size: 34px;
+      }
+
+      .metro-logo {
+        order: 2;
+      }
+
+      .buscador {
+        order: 3;
+        flex: 1 1 100%;
+      }
+
+      .menu {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 0;
+      }
+
+      .franja {
+        font-size: 16px;
+      }
+
+      .carrusel {
+        height: 430px;
+      }
+
+      .slide {
+        flex-direction: column;
+        gap: 8px;
+        padding: 0 44px 34px;
+      }
+
+      .slide h2 {
+        font-size: 28px;
+      }
+
+      .slide .subtitulo {
+        margin-top: 8px;
+        font-size: 20px;
+      }
+
+      .boton-amarillo {
+        margin-top: 16px;
+        font-size: 17px;
+      }
+
+      .slide-2 .slide-texto {
+        text-align: center;
+      }
+
+      .slide-2 h2 {
+        font-size: 24px;
+      }
+
+      .slide-2 .boton-amarillo {
+        margin-top: 12px;
+      }
+
+      .slide-2 img {
+        align-self: center;
+        height: 110px;
+        max-width: 100%;
+      }
+
+      .flecha {
+        width: 36px;
+      }
+
+      .flecha svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .flecha.anterior { left: 2px; }
+      .flecha.siguiente { right: 2px; }
+
+      .lema span {
+        display: none;
+      }
+
+      .civicaya .contenedor {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+      }
+
+      .civicaya-texto,
+      .civicaya img {
+        flex: none;
+      }
+
+      .civicaya h2 {
+        font-size: 26px;
+      }
+
+      .civicaya-acciones {
+        justify-content: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .slide {
+        transition: none;
       }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <nav class="topbar">
-      <a href="/" class="activo">INICIO</a>
-      <a href="/Project/InicioSesion.html">INICIAR SESIÓN</a>
-      <a href="/Project/Registrarse.html">REGISTRARSE</a>
-    </nav>
-    <div class="brandbar">
-      <a class="brand" href="/"><span>Cívica<b>Ya</b></span></a>
-      <img class="metro" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
+  <!-- 1. Barra superior -->
+  <div class="barra-superior">
+    <div class="contenedor">
+      <nav aria-label="Principal">
+        <a href="/">Inicio</a>
+        <a href="https://civica.metrodemedellin.gov.co/que-es-civica/preguntas-frecuentes" target="_blank" rel="noopener">Preguntas frecuentes</a>
+      </nav>
+      <a class="cuenta" href="/Project/InicioSesion.html">
+        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="11" fill="none" stroke="#fff" stroke-width="1.6" />
+          <circle cx="12" cy="9.5" r="3.6" fill="#fff" />
+          <path d="M4.8 19.2c1.4-3.2 4-4.6 7.2-4.6s5.8 1.4 7.2 4.6" fill="#fff" />
+        </svg>
+        <span>Ingresa a<br>tu cuenta</span>
+      </a>
     </div>
-    <div class="divider"></div>
+  </div>
+
+  <!-- 2. Encabezado -->
+  <header class="cabecera">
+    <div class="contenedor">
+      <div class="cabecera-fila">
+        <a class="logo" href="/">Cívica</a>
+        <form class="buscador" id="buscador" role="search">
+          <input type="search" id="consulta" placeholder="Buscar..." aria-label="Buscar">
+          <button type="submit" aria-label="Buscar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+              <circle cx="10" cy="10" r="6.5" />
+              <path d="M15 15l6 6" />
+            </svg>
+          </button>
+        </form>
+        <img class="metro-logo" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
+      </div>
+      <nav class="menu" aria-label="Secciones">
+        <a class="desplegable" href="#">¿Qué es Cívica?</a>
+        <a class="desplegable" href="#como-funciona">¿Cómo usarla?</a>
+        <a class="desplegable" href="/Project/Registrarse.html">¡Quiero una!</a>
+        <a href="#">App Cívica</a>
+      </nav>
+    </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-contenido">
-      <div class="hero-texto">
-        <h1>Reclama tu Cívica personalizada sin hacer fila</h1>
+  <!-- 3. Franja -->
+  <div class="franja">Cívica: medio de pago para que te muevas por la ciudad</div>
+
+  <!-- 4. Carrusel -->
+  <section class="carrusel" id="carrusel" aria-roledescription="carrusel" aria-label="Novedades">
+    <span class="circulo c1"></span>
+    <span class="circulo c2"></span>
+    <span class="circulo c3"></span>
+    <span class="circulo c4"></span>
+    <span class="circulo c5"></span>
+    <span class="circulo c6"></span>
+
+    <article class="slide activa">
+      <div class="slide-texto">
+        <h2>Toma la vía más rápida, así puedes recargar tu Cívica.</h2>
+        <p class="subtitulo">Conoce otros canales</p>
+        <a class="boton-amarillo" href="#puntos-atencion">Click Aquí <span class="icono" aria-hidden="true">👆</span></a>
+      </div>
+    </article>
+
+    <article class="slide slide-2">
+      <div class="slide-texto">
+        <h2>Ahora será más fácil ingresar con tu bici o monopatín a nuestra red Metro</h2>
+        <a class="boton-amarillo" href="#como-funciona">Conoce aquí <span class="icono" aria-hidden="true">👆</span></a>
+      </div>
+      <img src="/Project/img/index%20(1)_preview_rev_1.png" alt="Mujer con su bicicleta">
+    </article>
+
+    <button class="flecha anterior" type="button" aria-label="Diapositiva anterior">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4L7 12l8 8" /></svg>
+    </button>
+    <button class="flecha siguiente" type="button" aria-label="Diapositiva siguiente">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l8 8-8 8" /></svg>
+    </button>
+
+    <div class="indicadores">
+      <button class="indicador" type="button" aria-label="Ir a la diapositiva 1"></button>
+      <button class="indicador" type="button" aria-label="Ir a la diapositiva 2"></button>
+    </div>
+
+    <div class="lema">
+      <span>Lo que tú haces <b>nos mueve</b></span>
+      <img src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
+    </div>
+  </section>
+
+  <!-- Sección CívicaYa -->
+  <section class="civicaya" id="civicaya">
+    <div class="contenedor">
+      <div class="civicaya-texto">
+        <span class="civicaya-etiqueta">CívicaYa</span>
+        <h2>Reclama tu Cívica personalizada sin hacer fila</h2>
         <p>Registra tus datos desde la web, elige el punto de atención que te queda mejor y, cuando tu tarjeta esté lista, solo muestra tu documento para recogerla.</p>
-        <div class="hero-acciones">
-          <a class="btn btn-morado" href="/Project/Registrarse.html">Solicitar mi Cívica</a>
-          <a class="btn btn-claro" href="/Project/InicioSesion.html">Ya tengo cuenta</a>
+        <div class="civicaya-acciones">
+          <a class="boton-amarillo" href="/Project/Registrarse.html">Solicitar mi Cívica <span class="icono" aria-hidden="true">👆</span></a>
+          <a class="enlace-cuenta" href="/Project/InicioSesion.html">Ya tengo cuenta</a>
         </div>
       </div>
       <img src="/Project/img/tarjeta-civica.png" alt="Tarjeta Cívica">
@@ -204,30 +815,108 @@
   </section>
 
   <main>
-    <h2>¿Cómo funciona?</h2>
-    <ol class="pasos">
-      <li><strong>Crea tu cuenta</strong>Regístrate con tu correo y una contraseña.</li>
-      <li><strong>Diligencia el formulario</strong>Ingresa tus datos y elige el punto de atención (PAC) donde reclamarás tu tarjeta.</li>
-      <li><strong>Recoge tu Cívica</strong>Cuando tu solicitud esté confirmada, ve al PAC y presenta tu documento de identidad.</li>
-    </ol>
+    <section id="como-funciona">
+      <h2>¿Cómo funciona?</h2>
+      <ol class="pasos">
+        <li><strong>Crea tu cuenta</strong>Regístrate con tu correo y una contraseña.</li>
+        <li><strong>Diligencia el formulario</strong>Ingresa tus datos y elige el punto de atención (PAC) donde reclamarás tu tarjeta.</li>
+        <li><strong>Recoge tu Cívica</strong>Cuando tu solicitud esté confirmada, ve al PAC y presenta tu documento de identidad.</li>
+      </ol>
+    </section>
 
-    <h2>Puntos de atención (PAC)</h2>
-    <ul class="puntos" id="listaPuntos"></ul>
+    <section id="puntos-atencion">
+      <h2>Puntos de atención (PAC)</h2>
+      <ul class="puntos" id="listaPuntos"></ul>
+    </section>
   </main>
 
-  <script src="/Project/js/util.js"></script>
   <script>
-    pedirJSON('/puntos').then(({ ok, datos }) => {
-      if (!ok || !Array.isArray(datos)) return;
-      document.getElementById('listaPuntos').innerHTML = datos.map((p) => `
-        <li class="punto">
-          <img src="${esc(p.imagen)}" alt="${esc(p.nombre)}" loading="lazy">
-          <div class="punto-info">
-            <h3>${esc(p.nombre)}</h3>
-            <p>${esc(p.ubicacion)}</p>
-            <a class="btn btn-secundario" href="${esc(p.mapa)}" target="_blank" rel="noopener">Ver en Google Maps</a>
-          </div>
-        </li>`).join('');
+    // ---------- Carrusel ----------
+    const carrusel = document.getElementById('carrusel');
+    const slides = [...carrusel.querySelectorAll('.slide')];
+    const indicadores = [...carrusel.querySelectorAll('.indicador')];
+    const INTERVALO = 5000;
+    let actual = 0;
+    let temporizador = null;
+
+    function ir(n) {
+      actual = (n + slides.length) % slides.length;
+      slides.forEach((slide, i) => {
+        const activa = i === actual;
+        slide.classList.toggle('activa', activa);
+        slide.setAttribute('aria-hidden', String(!activa));
+        slide.inert = !activa; // los enlaces de la diapositiva oculta no reciben foco
+      });
+      indicadores.forEach((punto, i) => punto.setAttribute('aria-current', String(i === actual)));
+    }
+
+    function detener() {
+      clearInterval(temporizador);
+      temporizador = null;
+    }
+
+    function iniciar() {
+      detener();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      temporizador = setInterval(() => ir(actual + 1), INTERVALO);
+    }
+
+    carrusel.querySelector('.anterior').addEventListener('click', () => { ir(actual - 1); iniciar(); });
+    carrusel.querySelector('.siguiente').addEventListener('click', () => { ir(actual + 1); iniciar(); });
+    indicadores.forEach((punto, i) => punto.addEventListener('click', () => { ir(i); iniciar(); }));
+
+    // Pausa al pasar el mouse o al navegar con teclado dentro del carrusel
+    carrusel.addEventListener('mouseenter', detener);
+    carrusel.addEventListener('mouseleave', iniciar);
+    carrusel.addEventListener('focusin', detener);
+    carrusel.addEventListener('focusout', iniciar);
+
+    ir(0);
+    iniciar();
+
+    // ---------- Puntos de atención ----------
+    const listaPuntos = document.getElementById('listaPuntos');
+    let puntos = [];
+
+    function esc(valor) {
+      return String(valor ?? '').replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+
+    const normalizar = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+    function pintarPuntos(consulta = '') {
+      const q = normalizar(consulta.trim());
+      const visibles = puntos.filter((p) => normalizar(`${p.nombre} ${p.ubicacion}`).includes(q));
+      listaPuntos.innerHTML = visibles.length
+        ? visibles.map((p) => `
+          <li class="punto">
+            <img src="${esc(p.imagen)}" alt="${esc(p.nombre)}" loading="lazy">
+            <div class="punto-info">
+              <h3>${esc(p.nombre)}</h3>
+              <p>${esc(p.ubicacion)}</p>
+              <a class="btn" href="${esc(p.mapa)}" target="_blank" rel="noopener">Ver en Google Maps</a>
+            </div>
+          </li>`).join('')
+        : '<li class="sin-resultados">No encontramos puntos de atención con ese nombre.</li>';
+    }
+
+    fetch('/puntos')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((datos) => {
+        puntos = Array.isArray(datos) ? datos : [];
+        pintarPuntos();
+      })
+      .catch(() => {});
+
+    // El buscador filtra los puntos de atención
+    const consulta = document.getElementById('consulta');
+    consulta.addEventListener('input', () => pintarPuntos(consulta.value));
+    document.getElementById('buscador').addEventListener('submit', (e) => {
+      e.preventDefault();
+      pintarPuntos(consulta.value);
+      document.getElementById('puntos-atencion').scrollIntoView({ behavior: 'smooth' });
     });
   </script>
 </body>
