@@ -1,4 +1,5 @@
 -- Esquema de CívicaYa (SQLite)
+-- Los puntos de atención (tabla Sucursales) se cargan desde puntos.js.
 
 CREATE TABLE IF NOT EXISTS Usuarios_Civica (
     Correo TEXT PRIMARY KEY,
@@ -31,8 +32,3 @@ CREATE TABLE IF NOT EXISTS Solicitudes (
     FOREIGN KEY (Id_Usuario) REFERENCES Usuarios(Id_Usuario),
     FOREIGN KEY (id_Sucursal) REFERENCES Sucursales(id_Sucursal)
 );
-
-INSERT OR IGNORE INTO Sucursales (Nombre_Sucursal) VALUES
-    ('Acevedo'),
-    ('Itagui'),
-    ('San Antonio');

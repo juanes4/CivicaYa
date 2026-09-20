@@ -2,175 +2,234 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inicio Cívica</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CívicaYa</title>
+  <link rel="stylesheet" href="/Project/css/estilos.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    .hero {
+      background: linear-gradient(120deg, #3f7d10, #7ab51d);
+      color: #fff;
+      padding: 48px 24px;
     }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    /* Barra superior */
-    .topbar {
-      background-color: #8bc500;
-      color: white;
+    .hero-contenido {
+      max-width: 1100px;
+      margin: 0 auto;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 10px 30px;
-      font-size: 0.9em;
-    }
-
-    .topbar a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      margin: 0 10px;
-    }
-
-    .topbar a:hover {
-      text-decoration: underline;
-    }
-
-    .middlebar {
-      background-color: #f4f4f4;
-      padding: 15px 30px;
-      display: flex;
       justify-content: space-between;
-      align-items: center;
+      gap: 32px;
       flex-wrap: wrap;
     }
 
-    .logo {
-      font-size: 1.5em;
-      font-weight: bold;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .search-box input {
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .metro-logo {
-      width: 40px;
-      height: auto;
-    }
-
-    /* Banner principal */
-    .banner {
-      background: linear-gradient(to right, #77dd77, #a2e38f);
-      color: white;
-      padding: 50px 30px;
-      text-align: left;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .banner .text {
+    .hero-texto {
+      flex: 1 1 380px;
       max-width: 600px;
     }
 
-    .banner h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
-      font-weight: bold;
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: 2.2rem;
     }
 
-    .banner .btn {
-      background-color: #6a1b9a;
-      color: white;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 25px;
-      font-size: 1em;
-      text-decoration: none;
-      display: inline-block;
+    .hero p {
+      margin: 0 0 26px;
+      font-size: 1.1rem;
     }
 
-    .banner .btn:hover {
-      background-color: #4a148c;
-    }
-
-    .banner .image-placeholder {
-      width: 300px;
-      height: 200px;
-      background-color: #ddd;
-      border-radius: 10px;
+    .hero-acciones {
       display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .hero .btn-morado {
+      background: var(--morado);
+      border-radius: 25px;
+    }
+
+    .hero .btn-morado:hover {
+      background: #4a148c;
+    }
+
+    .hero .btn-claro {
+      background: transparent;
+      border-color: #fff;
+      border-radius: 25px;
+    }
+
+    .hero .btn-claro:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .hero img {
+      flex: 0 1 340px;
+      width: 340px;
+      max-width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    main h2 {
+      margin: 0 0 18px;
+    }
+
+    .pasos {
+      list-style: none;
+      margin: 0 0 40px;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      counter-reset: paso;
+    }
+
+    .pasos li {
+      counter-increment: paso;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
+      padding: 20px;
+    }
+
+    .pasos li::before {
+      content: counter(paso);
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #555;
-      font-size: 0.9em;
-      margin-top: 20px;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      background: var(--verde-oscuro);
+      color: #fff;
+      font-weight: 700;
     }
 
-    @media (max-width: 768px) {
-      .banner {
-        flex-direction: column;
-        text-align: center;
+    .pasos strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .puntos {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .punto {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
+      overflow: hidden;
+    }
+
+    .punto img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: var(--verde-claro);
+    }
+
+    .punto-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 16px 18px 18px;
+    }
+
+    .punto-info h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .punto-info p {
+      margin: 0 0 12px;
+      color: #555;
+      font-size: 0.92rem;
+    }
+
+    .punto-info .btn {
+      margin-top: auto;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 720px) {
+      .hero h1 {
+        font-size: 1.7rem;
       }
 
-      .banner .image-placeholder {
-        width: 90%;
-        height: 180px;
-      }
-
-      .topbar,
-      .middlebar {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .search-box {
-        justify-content: center;
-        margin-top: 10px;
+      .hero img {
+        flex-basis: 100%;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="topbar">
-    <div>
-      <a href="#">INICIO</a> | 
-      <a href="Project/inicioSesion.html">INICIAR SESIÓN</a>
+  <header>
+    <nav class="topbar">
+      <a href="/" class="activo">INICIO</a>
+      <a href="/Project/InicioSesion.html">INICIAR SESIÓN</a>
+      <a href="/Project/Registrarse.html">REGISTRARSE</a>
+    </nav>
+    <div class="brandbar">
+      <a class="brand" href="/"><span>Cívica<b>Ya</b></span></a>
+      <img class="metro" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
     </div>
+    <div class="divider"></div>
+  </header>
 
-  </div>
+  <section class="hero">
+    <div class="hero-contenido">
+      <div class="hero-texto">
+        <h1>Reclama tu Cívica personalizada sin hacer fila</h1>
+        <p>Registra tus datos desde la web, elige el punto de atención que te queda mejor y, cuando tu tarjeta esté lista, solo muestra tu documento para recogerla.</p>
+        <div class="hero-acciones">
+          <a class="btn btn-morado" href="/Project/Registrarse.html">Solicitar mi Cívica</a>
+          <a class="btn btn-claro" href="/Project/InicioSesion.html">Ya tengo cuenta</a>
+        </div>
+      </div>
+      <img src="/Project/img/tarjeta-civica.png" alt="Tarjeta Cívica">
+    </div>
+  </section>
 
-  <div class="middlebar">
-    <div class="logo">Cívica</div>
-    <div class="search-box">
-      <input type="text" placeholder="Buscar..." />
-      🔍
-      <img src="Project/img/21012b36-7535-432d-a495-0d3e928a8b33.jpg" class="metro-logo" alt="Logo Metro de Medellín">
-    </div>
-  </div>
+  <main>
+    <h2>¿Cómo funciona?</h2>
+    <ol class="pasos">
+      <li><strong>Crea tu cuenta</strong>Regístrate con tu correo y una contraseña.</li>
+      <li><strong>Diligencia el formulario</strong>Ingresa tus datos y elige el punto de atención (PAC) donde reclamarás tu tarjeta.</li>
+      <li><strong>Recoge tu Cívica</strong>Cuando tu solicitud esté confirmada, ve al PAC y presenta tu documento de identidad.</li>
+    </ol>
 
-  <div class="banner">
-    <div class="text">
-      <h1>Ahora será más fácil ingresar con tu bici o monopatín a nuestra red Metro</h1>
-      <a class="btn" href="#">Conoce aquí</a>
-    </div>
-    <div class="image-placeholder">
-      <img src="Project/img/index (1)_preview_rev_1.png" height="300px">
-    </div>
-  </div>
+    <h2>Puntos de atención (PAC)</h2>
+    <ul class="puntos" id="listaPuntos"></ul>
+  </main>
+
+  <script src="/Project/js/util.js"></script>
+  <script>
+    pedirJSON('/puntos').then(({ ok, datos }) => {
+      if (!ok || !Array.isArray(datos)) return;
+      document.getElementById('listaPuntos').innerHTML = datos.map((p) => `
+        <li class="punto">
+          <img src="${esc(p.imagen)}" alt="${esc(p.nombre)}" loading="lazy">
+          <div class="punto-info">
+            <h3>${esc(p.nombre)}</h3>
+            <p>${esc(p.ubicacion)}</p>
+            <a class="btn btn-secundario" href="${esc(p.mapa)}" target="_blank" rel="noopener">Ver en Google Maps</a>
+          </div>
+        </li>`).join('');
+    });
+  </script>
 </body>
 
 </html>

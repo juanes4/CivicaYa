@@ -8,15 +8,21 @@ Las personas registran sus datos con anticipación desde la web, eligen la sucur
 
 1. La persona crea una cuenta con su correo y contraseña.
 2. Diligencia el formulario (nombre, cédula, fecha de nacimiento, teléfono, dirección) y elige la sucursal.
-3. El sistema genera la solicitud con un código de barras y estado `PENDIENTE`.
-4. Un administrador la pasa a `CONFIRMADO` cuando la tarjeta está lista y a `ENTREGADO` cuando la persona la reclama.
+3. El sistema genera la solicitud con un código y estado `PENDIENTE`.
+4. Un administrador la pasa a `CONFIRMADO` cuando la tarjeta está lista y a `ENTREGADO` cuando la persona la reclama (siempre en ese orden).
+
+## Puntos de atención (PAC)
+
+San Antonio Oriente, San Antonio Occidente, Acevedo, Itagüí, San Javier y Niquía. La lista vive en [puntos.js](puntos.js) (nombre, ubicación y enlace a Google Maps); el servidor la carga en la tabla `Sucursales` al iniciar y las páginas la consultan en `/puntos`.
+
+Para mostrar la foto de un PAC, guarda el archivo en `Project/img/pac/` con el nombre indicado en `imagen` (por ejemplo `acevedo.jpg`, `san-antonio-oriente.png`). Si no hay foto se usa una imagen genérica.
 
 ## Funcionalidades
 
 - Registro e inicio de sesión (contraseñas con bcrypt, sesiones con express-session).
-- Formulario de solicitud por sucursal (Acevedo, Itagüí, San Antonio) con código de barras.
-- Vista de la solicitud para el usuario.
-- Panel de administración: listar solicitudes por sucursal, confirmar, marcar entregas y eliminar registros.
+- Formulario de solicitud con elección del PAC.
+- Vista de la solicitud para el usuario, con su estado y código.
+- Panel de administración: listar solicitudes por PAC, confirmar y marcar entregas.
 
 ### Pendiente
 
@@ -55,7 +61,8 @@ Abre <http://localhost:3000>.
 
 ```
 server.js          Servidor Express y rutas
+puntos.js          Lista de puntos de atención (PAC)
 schema.sql         Esquema de la base de datos
-scripts/init-db.js Inicializa la base y el admin
-Project/           Páginas HTML e imágenes
+scripts/init-db.js Inicializa la base, los PAC y el admin
+Project/           Páginas HTML, css/, js/ e img/ (solo esta carpeta se sirve al navegador)
 ```

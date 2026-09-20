@@ -2,253 +2,178 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Solicitudes de Usuarios</title>
-    <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      background: #f5f5f5;
-    }
-
-    header {
-      background: #7AC11E;
-      color: white;
-      padding: 10px 20px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitudes - CívicaYa</title>
+  <link rel="stylesheet" href="/Project/css/estilos.css">
+  <style>
+    .encabezado-panel {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
+      gap: 12px 24px;
+      margin-bottom: 18px;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo img {
-      height: 50px;
-      margin-right: 15px;
-    }
-
-    .logo h1 {
-      font-size: 20px;
+    .encabezado-panel h1 {
       margin: 0;
-      font-weight: bold;
-    }
-
-    nav {
-      display: flex;
-      gap: 10px;
-      margin: 10px 20px;
-    }
-
-    nav button {
-      background-color: #7AC11E;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    nav button:hover {
-      background-color: #6aa81b;
+      font-size: 1.5rem;
     }
 
     .filtro {
-      margin: 20px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
     .filtro label {
-      font-weight: bold;
+      margin: 0;
+      white-space: nowrap;
     }
 
-    table {
-      border-collapse: collapse;
-      width: 95%;
-      margin: 0 auto 30px;
-      background-color: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    .filtro select {
+      width: auto;
+      min-width: 220px;
     }
 
-    th, td {
-      padding: 12px;
-      text-align: center;
-    }
-
-    th {
-      background-color: #f4f4f4;
-      font-weight: bold;
-    }
-
-    td button {
-      padding: 8px 12px;
-      border: none;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin: 2px;
-    }
-
-    .btn-confirmar {
-      background-color: #00AEEF;
+    .btn-accion {
+      padding: 8px 14px;
+      font-size: 0.85rem;
     }
 
     .btn-entregar {
-      background-color: #EF4136;
+      background: #c62828;
     }
 
-    .estado {
-      background-color: #f4f4f4;
-      font-weight: bold;
+    .btn-entregar:hover {
+      background: #a01f1f;
     }
 
-    a {
-      display: block;
-      text-align: center;
-      margin: 20px;
-      text-decoration: none;
-      color: #333;
-      font-weight: bold;
-    }
-
-    @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-
-      th {
-        display: none;
-      }
-
-      td {
-        border: none;
-        position: relative;
-        padding-left: 50%;
-        text-align: left;
-      }
-
-      td::before {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        font-weight: bold;
-      }
-
-      td:nth-child(1)::before { content: "Nombre"; }
-      td:nth-child(2)::before { content: "Apellido"; }
-      td:nth-child(3)::before { content: "Cédula"; }
-      td:nth-child(4)::before { content: "Sucursal"; }
-      td:nth-child(5)::before { content: "Estado"; }
-      td:nth-child(6)::before { content: "Acciones"; }
-
+    @media (max-width: 520px) {
       .filtro {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        width: 100%;
       }
     }
   </style>
 </head>
 
 <body>
-
   <header>
-    <div class="logo">
-      <!-- Aquí va el logo principal de Cívica -->
-      <img src="img/WhatsApp Image 2025-06-03 at 9.26.30 PM.jpeg" alt="Logo Cívica" style="height: 30px;">
-      <h1>SISTEMA SOLICITUD CÍVICA</h1>
+    <nav class="topbar">
+      <a href="/Project/ModuloAdmin.html" class="activo">SOLICITUDES</a>
+      <a href="/Project/Eliminados.html">ENTREGADAS</a>
+      <a href="/logout">CERRAR SESIÓN</a>
+    </nav>
+    <div class="brandbar">
+      <a class="brand" href="/Project/ModuloAdmin.html"><span>Cívica<b>Ya</b> · Administración</span></a>
+      <img class="metro" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
     </div>
-    <img src="img/21012b36-7535-432d-a495-0d3e928a8b33.jpg" alt="Logo Metro" style="height: 60px;">
+    <div class="divider"></div>
   </header>
 
-  <div class="filtro">
-    <label for="filtroSucursal">Filtrar por sucursal:</label>
-    <select id="filtroSucursal">
-      <option value="">Todas</option>
-      <option value="Acevedo">Acevedo</option>
-      <option value="Itagui">Itagui</option>
-      <option value="San Antonio">San Antonio</option>
-    </select>
-  </div>
+  <main>
+    <div class="encabezado-panel">
+      <h1>Solicitudes en curso</h1>
+      <div class="filtro">
+        <label for="filtroSucursal">Filtrar por PAC:</label>
+        <select id="filtroSucursal">
+          <option value="">Todos</option>
+        </select>
+      </div>
+    </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Cédula</th>
-        <th>Nombre Sucursal</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tablaSolicitudes">
-      <!-- Aquí se insertarán las filas -->
-    </tbody>
-  </table>
+    <div id="alerta" role="alert"></div>
 
-    <a href="/Project/Eliminados.html">Ver civicas entregadas</a>
+    <div class="tabla-scroll">
+      <table class="apilable">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Cédula</th>
+            <th>Punto de atención</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaSolicitudes"></tbody>
+      </table>
+    </div>
+  </main>
 
-    <a href="/logout">Cerrar sesión</a>
+  <script src="/Project/js/util.js"></script>
   <script>
-  function cargarSolicitudes() {
-    const sucursal = document.getElementById('filtroSucursal').value;
-    let url = '/solicitudes-todas';
-    if (sucursal) {
-      url += '?sucursal=' + encodeURIComponent(sucursal);
+    const filtro = document.getElementById('filtroSucursal');
+    const tbody = document.getElementById('tablaSolicitudes');
+    const alerta = document.getElementById('alerta');
+
+    // Cada estado tiene una única acción posible: PENDIENTE → CONFIRMADO → ENTREGADO
+    const acciones = {
+      PENDIENTE: { estado: 'CONFIRMADO', texto: 'Confirmar solicitud', clase: '' },
+      CONFIRMADO: { estado: 'ENTREGADO', texto: 'Confirmar entrega', clase: 'btn-entregar' }
+    };
+
+    async function cargarSolicitudes() {
+      let url = '/solicitudes-todas';
+      if (filtro.value) url += '?sucursal=' + encodeURIComponent(filtro.value);
+
+      const { ok, status, datos } = await pedirJSON(url);
+      if (status === 401 || status === 403) return (window.location.href = '/Project/InicioSesion.html');
+      if (!ok || !Array.isArray(datos)) {
+        return mostrarAlerta(alerta, 'error', 'No se pudieron cargar las solicitudes.');
+      }
+      alerta.className = '';
+      alerta.textContent = '';
+
+      if (datos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="vacio">No hay solicitudes en curso.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = datos.map((s) => {
+        const accion = acciones[s.Estado];
+        const boton = accion
+          ? `<button class="btn btn-accion ${accion.clase}" data-cedula="${esc(s.Cedula)}" data-estado="${accion.estado}">${accion.texto}</button>`
+          : '';
+        return `
+          <tr>
+            <td data-label="Nombre">${esc(s.Nombre)}</td>
+            <td data-label="Apellido">${esc(s.Apellido)}</td>
+            <td data-label="Cédula">${esc(s.Cedula)}</td>
+            <td data-label="Punto de atención">${esc(s.Nombre_Sucursal)}</td>
+            <td data-label="Estado"><span class="estado estado-${esc(s.Estado)}">${esc(s.Estado)}</span></td>
+            <td data-label="Acción">${boton}</td>
+          </tr>`;
+      }).join('');
     }
-    fetch(url)
-      .then(res => res.json())
-      .then(datos => {
-        const tbody = document.getElementById('tablaSolicitudes');
-        tbody.innerHTML = '';
-        datos.forEach(s => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${s.Nombre}</td>
-            <td>${s.Apellido}</td>
-            <td>${s.Cedula}</td>
-            <td>${s.Nombre_Sucursal}</td>
-            <td class="estado">${s.Estado}</td>
-            <td>
-              <button class="btn-confirmar" onclick="cambiarEstado('${s.Cedula}', 'CONFIRMADO')">CONFIRMAR SOLICITUD</button>
-              <button class="btn-entregar" onclick="cambiarEstado('${s.Cedula}', 'ENTREGADO')">CONFIRMAR ENTREGA</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-  }
 
-  document.getElementById('filtroSucursal').addEventListener('change', cargarSolicitudes);
-
-  function cambiarEstado(cedula, nuevoEstado) {
-    fetch('/cambiar-estado', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cedula, estado: nuevoEstado })
-    })
-    .then(res => res.text())
-    .then(msg => {
-      alert(msg);
+    async function cambiarEstado(cedula, nuevoEstado) {
+      const { ok, datos } = await enviarJSON('/cambiar-estado', { cedula, estado: nuevoEstado });
+      if (!ok) {
+        mostrarAlerta(alerta, 'error', datos.mensaje || 'No se pudo actualizar el estado.');
+        return cargarSolicitudes();
+      }
       if (nuevoEstado === 'CONFIRMADO') {
-        // Redirige a civica.html con la cédula como parámetro
+        // Muestra la tarjeta lista para esta persona
         window.location.href = `/Project/civica.html?cedula=${encodeURIComponent(cedula)}`;
       } else {
         cargarSolicitudes();
       }
-    });
-  }
+    }
 
-  cargarSolicitudes();
-</script>
+    tbody.addEventListener('click', (e) => {
+      const boton = e.target.closest('button[data-cedula]');
+      if (!boton) return;
+      boton.disabled = true;
+      cambiarEstado(boton.dataset.cedula, boton.dataset.estado);
+    });
+
+    filtro.addEventListener('change', cargarSolicitudes);
+
+    cargarPuntos(filtro).then(cargarSolicitudes);
+  </script>
 </body>
+
 </html>

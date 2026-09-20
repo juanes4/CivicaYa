@@ -1,57 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tarjeta Cívica</title>
-    <style>
-        .contenedor-civica {
-            position: relative;
-            display: inline-block;
-        }
-        .imagen {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            display: block;
-        }
-        .datos-civica {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
-            color: #222;
-            background: #80a811;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 1.1em;
-            text-align: left;
-            min-width: 120px;
-        }
-    </style>
-</head>
-<body>
-    <div class="contenedor-civica">
-        <img src="img/Captura de pantalla 2025-06-02 202308.png" class="imagen" alt="Tarjeta Cívica">
-        <div id="datosPersona" class="datos-civica"></div>
-    </div>
-    <script>
-        window.onload = async function() {
-            const params = new URLSearchParams(window.location.search);
-            const cedula = params.get('cedula');
-            if (!cedula) return;
+<html lang="es">
 
-            const res = await fetch(`/datos-persona?cedula=${cedula}`);
-            const data = await res.json();
-            if (data.existe) {
-                document.getElementById('datosPersona').innerHTML = `
-                    ${data.Nombre}<br>
-                    ${data.Apellido}<br>
-                    c.c. ${data.Cedula}
-                `;
-            } else {
-                document.getElementById('datosPersona').textContent = 'No se encontraron datos.';
-            }
-        };
-    </script><button onclick="window.location.href='/Project/ModuloAdmin.html'" style="margin-top:20px;">Volver a Módulo Admin</button>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarjeta Cívica - CívicaYa</title>
+  <link rel="stylesheet" href="/Project/css/estilos.css">
+  <style>
+    .vista {
+      text-align: center;
+    }
+
+    .vista h1 {
+      margin: 0 0 6px;
+      font-size: 1.5rem;
+    }
+
+    .vista > p {
+      margin: 0 0 22px;
+      color: #555;
+    }
+
+    /* La tarjeta escala con su ancho: el texto usa unidades cqw (relativas al contenedor) */
+    .contenedor-civica {
+      position: relative;
+      container-type: inline-size;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto 26px;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    .contenedor-civica img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .datos-civica {
+      position: absolute;
+      left: 63.5%;
+      top: 66.5%;
+      width: 32%;
+      color: #fff;
+      font-size: 3cqw;
+      font-weight: 700;
+      text-align: left;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      line-height: 1.25;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav class="topbar">
+      <a href="/Project/ModuloAdmin.html">SOLICITUDES</a>
+      <a href="/Project/Eliminados.html">ENTREGADAS</a>
+      <a href="/logout">CERRAR SESIÓN</a>
+    </nav>
+    <div class="brandbar">
+      <a class="brand" href="/Project/ModuloAdmin.html"><span>Cívica<b>Ya</b> · Administración</span></a>
+      <img class="metro" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
+    </div>
+    <div class="divider"></div>
+  </header>
+
+  <main class="vista">
+    <h1>Solicitud confirmada</h1>
+    <p>Así quedará la tarjeta personalizada.</p>
+
+    <div class="contenedor-civica">
+      <img src="/Project/img/tarjeta-civica.png" alt="Tarjeta Cívica">
+      <div id="datosPersona" class="datos-civica"></div>
+    </div>
+
+    <a class="btn" href="/Project/ModuloAdmin.html">Volver a solicitudes</a>
+  </main>
+
+  <script src="/Project/js/util.js"></script>
+  <script>
+    (async () => {
+      const cedula = new URLSearchParams(window.location.search).get('cedula');
+      const contenedor = document.getElementById('datosPersona');
+      if (!cedula) return;
+
+      const { ok, datos } = await pedirJSON(`/datos-persona?cedula=${encodeURIComponent(cedula)}`);
+      if (ok && datos.existe) {
+        contenedor.innerHTML = `${esc(datos.Nombre)} ${esc(datos.Apellido)}<br>c.c. ${esc(datos.Cedula)}`;
+      } else {
+        contenedor.textContent = 'No se encontraron datos.';
+      }
+    })();
+  </script>
 </body>
+
 </html>

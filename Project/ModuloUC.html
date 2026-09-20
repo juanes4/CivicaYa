@@ -2,188 +2,98 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cívica</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fff;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi solicitud - CívicaYa</title>
+  <link rel="stylesheet" href="/Project/css/estilos.css">
+  <style>
+    .aviso {
+      margin: 0 0 18px;
+      text-align: center;
+    }
 
-        /* Barra superior igual a los otros HTMLs */
-        .barra-superior {
-            background-color: #8CC63F;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    .card table {
+      margin-top: 8px;
+    }
 
-        .barra-superior .izquierda {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .card th {
+      width: 38%;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.9rem;
+    }
 
-        .barra-superior .izquierda a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .barra-superior .izquierda a:hover {
-            text-decoration: underline;
-        }
-
-        .barra-superior .centro img {
-            height: 30px;
-        }
-
-        .barra-superior .derecha {
-            display: flex;
-            align-items: center;
-        }
-
-        .barra-superior .derecha input[type="text"] {
-            padding: 6px;
-            border: none;
-            border-radius: 4px 0 0 4px;
-            width: 160px;
-        }
-
-        .barra-superior .derecha button {
-            background-color: #ccc;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-        }
-
-        /* Línea gris inferior */
-        .barra-inferior {
-            height: 10px;
-            background-color: #444;
-        }
-
-        #info,
-        #noSolicitud {
-            max-width: 500px;
-            margin: 40px auto;
-            font-size: 1.1em;
-            background: #f9fff5;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
-            padding: 24px 28px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        th,
-        td {
-            border: 1px solid #b2d98c;
-            padding: 8px 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #e6f7d4;
-            color: #333;
-        }
-
-        a {
-            color: #007bff;
-        }
-
-        @media (max-width: 600px) {
-
-            #info,
-            #noSolicitud {
-                padding: 12px 6px;
-            }
-
-            .barra-superior {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .barra-superior .derecha {
-                margin-top: 10px;
-            }
-        }
-    </style>
+    .codigo {
+      font-family: Consolas, monospace;
+      letter-spacing: 0.05em;
+      word-break: break-all;
+    }
+  </style>
 </head>
 
 <body>
-    <!-- Barra Superior igual a los otros HTMLs -->
-    <div class="barra-superior">
-        <div class="izquierda">
-            <a href="/Project/index.html">INICIO</a>
-            <span>|</span>
-
-        </div>
-        <div class="centro">
-            <img src="WhatsApp Image 2025-06-03 at 9.26.30 PM.jpeg" alt="Cívica logo" style="height: 30px;">
-        </div>
-        <div class="derecha">
-            <input type="text" placeholder="Buscar...">
-            <button title="Buscar">🔍</button>
-        </div>
+  <header>
+    <nav class="topbar">
+      <a href="/">INICIO</a>
+      <a href="/Project/ModuloUC.html" class="activo">MI SOLICITUD</a>
+      <a href="/logout">CERRAR SESIÓN</a>
+    </nav>
+    <div class="brandbar">
+      <a class="brand" href="/"><span>Cívica<b>Ya</b></span></a>
+      <img class="metro" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
     </div>
-    <div class="barra-inferior"></div>
+    <div class="divider"></div>
+  </header>
 
-    <div id="info" style="display:none;">
-        <h2>Información de tu Solicitud Cívica</h2>
-        <table>
-            <tbody id="datosSolicitud"></tbody>
-        </table>
-    </div>
-    <div id="noSolicitud" style="display:none;">
-        <p>No has hecho una solicitud para la cívica.</p>
-        <a id="linkSolicitud" href="#">Ir a solicitar mi cívica</a>
-    </div>
+  <main>
+    <section id="info" class="card ancha" hidden>
+      <h2>Información de tu solicitud</h2>
+      <p id="aviso" class="aviso"></p>
+      <table>
+        <tbody id="datosSolicitud"></tbody>
+      </table>
+      <p class="enlaces" id="otraSolicitud" hidden><a href="/Project/ModuloUser.html">Solicitar otra Cívica</a></p>
+    </section>
 
-    <script>
-        fetch('/usuario-actual')
-            .then(res => res.json())
-            .then(session => {
-                if (!session.correo) {
-                    document.body.innerHTML = "<h2>Error: No se encontró el correo de sesión.</h2>";
-                } else {
-                    fetch(`/solicitud-usuario?correo=${encodeURIComponent(session.correo)}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.existe) {
-                                document.getElementById('info').style.display = '';
-                                const tbody = document.getElementById('datosSolicitud');
-                                tbody.innerHTML = `
-                                    <tr><th>Nombre</th><td>${data.Nombre}</td></tr>
-                                    <tr><th>Apellido</th><td>${data.Apellido}</td></tr>
-                                    <tr><th>Cédula</th><td>${data.Cedula}</td></tr>
-                                    <tr><th>Correo</th><td>${data.Correo}</td></tr>
-                                    <tr><th>Estado</th><td>${data.Estado}</td></tr>
-                                    <tr><th>Sucursal</th><td>${data.Nombre_Sucursal}</td></tr>
-                                `;
-                            } else {
-                                document.getElementById('noSolicitud').style.display = '';
-                                const link = document.getElementById('linkSolicitud');
-                                link.href = `/Project/ModuloUser.html?correo=${encodeURIComponent(session.correo)}`;
-                            }
-                        });
-                }
-            })
-            .catch(error => {
-                document.body.innerHTML = "<h2>Error al obtener datos de la sesión o solicitud.</h2>";
-                console.error('Error:', error);
-            });
-    </script>
+    <section id="noSolicitud" class="card ancha" hidden>
+      <h2>Aún no tienes una solicitud</h2>
+      <p class="aviso">Diligencia el formulario para reclamar tu Cívica sin hacer fila.</p>
+      <a class="btn btn-bloque" href="/Project/ModuloUser.html">Ir a solicitar mi Cívica</a>
+    </section>
+
+    <div id="error" class="alerta error" role="alert"></div>
+  </main>
+
+  <script src="/Project/js/util.js"></script>
+  <script>
+    const mensajes = {
+      PENDIENTE: 'Recibimos tu solicitud. Vuelve a esta página para saber cuándo tu Cívica esté lista.',
+      CONFIRMADO: 'Tu Cívica está lista. Ve al punto de atención elegido y presenta tu documento de identidad.',
+      ENTREGADO: 'Ya reclamaste tu Cívica.'
+    };
+
+    pedirJSON('/solicitud-usuario').then(({ ok, status, datos }) => {
+      if (status === 401) return (window.location.href = '/Project/InicioSesion.html');
+      if (!ok) throw new Error('Error consultando la solicitud');
+
+      if (!datos.existe) {
+        document.getElementById('noSolicitud').hidden = false;
+        return;
+      }
+      document.getElementById('info').hidden = false;
+      document.getElementById('aviso').textContent = mensajes[datos.Estado] || '';
+      document.getElementById('otraSolicitud').hidden = datos.Estado !== 'ENTREGADO';
+      document.getElementById('datosSolicitud').innerHTML = `
+        <tr><th>Nombre</th><td>${esc(datos.Nombre)}</td></tr>
+        <tr><th>Apellido</th><td>${esc(datos.Apellido)}</td></tr>
+        <tr><th>Cédula</th><td>${esc(datos.Cedula)}</td></tr>
+        <tr><th>Correo</th><td>${esc(datos.Correo)}</td></tr>
+        <tr><th>Punto de atención</th><td>${esc(datos.Nombre_Sucursal)}</td></tr>
+        <tr><th>Estado</th><td><span class="estado estado-${esc(datos.Estado)}">${esc(datos.Estado)}</span></td></tr>
+        <tr><th>Código de solicitud</th><td class="codigo">${esc(datos.Codigo_Barras)}</td></tr>
+      `;
+    }).catch(() => mostrarAlerta(document.getElementById('error'), 'error', 'No se pudo obtener la información de tu solicitud.'));
+  </script>
 </body>
+
+</html>

@@ -3,259 +3,74 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Registrarse</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff;
-    }
-
-    /* Barra superior */
-    .barra-superior {
-      background-color: #8CC63F;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .barra-superior .izquierda {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .barra-superior .izquierda a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .barra-superior .centro img {
-      height: 30px;
-    }
-
-    .barra-superior .derecha {
-      display: flex;
-      align-items: center;
-    }
-
-    .barra-superior .derecha input[type="text"] {
-      padding: 6px;
-      border: none;
-      border-radius: 4px 0 0 4px;
-      width: 160px;
-    }
-
-    .barra-superior .derecha button {
-      background-color: #ccc;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 0 4px 4px 0;
-      cursor: pointer;
-    }
-
-    /* Línea gris inferior */
-    .barra-inferior {
-      height: 10px;
-      background-color: #444;
-    }
-
-    /* Formulario centrado */
-    .contenedor-formulario {
-      display: flex;
-      justify-content: center;
-      margin-top: 40px;
-    }
-
-    .formulario {
-      background: #fff;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-      width: 300px;
-      text-align: center;
-    }
-
-    .formulario h2 {
-      margin-bottom: 20px;
-    }
-
-    .formulario input[type="email"],
-    .formulario input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .formulario button {
-      width: 100%;
-      padding: 10px;
-      background-color: #8CC63F;
-      color: white;
-      border: none;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .formulario a {
-      display: block;
-      margin-top: 10px;
-      color: #007BFF;
-      text-decoration: none;
-    }
-
-    /* Mensaje de validación */
-    #mensaje {
-      display: none;
-      position: fixed;
-      top: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      min-width: 250px;
-      max-width: 90vw;
-      padding: 16px 32px 16px 48px;
-      border-radius: 8px;
-      font-size: 1.1em;
-      font-family: Arial, sans-serif;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.4s, top 0.4s;
-      background: #333;
-      color: #fff;
-      background-repeat: no-repeat;
-      background-position: 16px center;
-    }
-
-    #mensaje.exito {
-      background-color: #4BB543;
-      background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>');
-    }
-
-    #mensaje.error {
-      background-color: #D7263D;
-      background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>');
-    }
-
-    #mensaje.mostrar {
-      display: block;
-      opacity: 1;
-      top: 50px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrarse - CívicaYa</title>
+  <link rel="stylesheet" href="/Project/css/estilos.css">
 </head>
 
 <body>
-
-  <!-- Barra Superior -->
-  <div class="barra-superior">
-    <div class="izquierda">
-      <a href="index.html">INICIO</a>
-      <span>|</span>
+  <header>
+    <nav class="topbar">
+      <a href="/">INICIO</a>
+      <a href="/Project/InicioSesion.html">INICIAR SESIÓN</a>
+      <a href="/Project/Registrarse.html" class="activo">REGISTRARSE</a>
+    </nav>
+    <div class="brandbar">
+      <a class="brand" href="/"><span>Cívica<b>Ya</b></span></a>
+      <img class="metro" src="/Project/img/logo-metro.jpg" alt="Metro de Medellín">
     </div>
-    <div class="centro">
-      <img src="img/WhatsApp Image 2025-06-03 at 9.26.30 PM.jpeg" alt="Cívica logo" style="height: 30px;">
-    </div>
-    <div class="derecha">
-      <input type="text" placeholder="Buscar...">
-      <button title="Buscar">🔍</button>
-    </div>
-  </div>
+    <div class="divider"></div>
+  </header>
 
-  <div class="barra-inferior"></div>
+  <main>
+    <form id="formRegistro" class="card" novalidate>
+      <h2>Crear cuenta</h2>
+      <div id="alerta" role="alert"></div>
 
-  <!-- Formulario -->
-  <div class="contenedor-formulario">
-    <form id="formRegistro" class="formulario">
-      <h2>Registrarse</h2>
-      <input type="email" name="correo" placeholder="Correo *" required>
-      <input type="password" name="contrasena" placeholder="Contraseña *" required>
-      <input type="password" name="confirmar" placeholder="Confirmar Contraseña *" required>
-      <button type="submit">ENTRAR</button>
-      <a href="/Project/inicioSesion.html">Iniciar Sesión</a>
+      <label class="requerido" for="correo">Correo</label>
+      <input type="email" id="correo" name="correo" autocomplete="email" required>
+
+      <label class="requerido" for="contrasena">Contraseña</label>
+      <input type="password" id="contrasena" name="contrasena" autocomplete="new-password" minlength="6" required>
+
+      <label class="requerido" for="confirmar">Confirmar contraseña</label>
+      <input type="password" id="confirmar" name="confirmar" autocomplete="new-password" required>
+
+      <button type="submit" class="btn btn-bloque">Registrarme</button>
+
+      <p class="enlaces">¿Ya tienes cuenta? <a href="/Project/InicioSesion.html">Inicia sesión</a></p>
     </form>
-  </div>
+  </main>
 
-  <div id="mensaje"></div>
-
-  <!-- Validación JS -->
+  <script src="/Project/js/util.js"></script>
   <script>
     const form = document.getElementById('formRegistro');
-    const mensaje = document.getElementById('mensaje');
+    const alerta = document.getElementById('alerta');
+    const boton = form.querySelector('button');
 
-    form.addEventListener('submit', async function (e) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const correo = form.correo.value.trim();
       const contrasena = form.contrasena.value;
       const confirmar = form.confirmar.value;
 
-      const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return mostrarAlerta(alerta, 'error', 'Ingresa un correo válido.');
+      if (contrasena.length < 6) return mostrarAlerta(alerta, 'error', 'La contraseña debe tener al menos 6 caracteres.');
+      if (contrasena !== confirmar) return mostrarAlerta(alerta, 'error', 'Las contraseñas no coinciden.');
 
-
-      if (!correoRegex.test(correo)) {
-        mensaje.className = 'error mostrar';
-        mensaje.textContent = 'Por favor, ingresa un correo válido.';
-        setTimeout(() => mensaje.classList.remove('mostrar'), 3000);
-        e.preventDefault();
-        return;
-      }
-
-      if (contrasena.length < 6) {
-        mensaje.className = 'error mostrar';
-        mensaje.textContent = 'La contraseña debe tener al menos 6 caracteres.';
-        setTimeout(() => mensaje.classList.remove('mostrar'), 3000);
-        e.preventDefault();
-        return;
-      }
-
-      if (contrasena !== confirmar) {
-        mensaje.className = 'error mostrar';
-        mensaje.textContent = 'Las contraseñas no coinciden.';
-        setTimeout(() => mensaje.classList.remove('mostrar'), 3000);
-        e.preventDefault();
-        return;
-      }
-
-      e.preventDefault();
-      const datos = { correo, contrasena, confirmar };
-      const res = await fetch('/registrar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(datos)
-      });
-
-      let data;
+      boton.disabled = true;
       try {
-        data = await res.json();
+        const { ok, datos } = await enviarJSON('/registrar', { correo, contrasena, confirmar });
+        if (ok && datos.redirect) {
+          mostrarAlerta(alerta, 'exito', datos.mensaje || 'Registro completado.');
+          setTimeout(() => { window.location.href = datos.redirect; }, 1200);
+        } else {
+          mostrarAlerta(alerta, 'error', datos.mensaje || 'No se pudo completar el registro.');
+          boton.disabled = false;
+        }
       } catch {
-        data = { mensaje: await res.text() };
-      }
-
-      mensaje.textContent = data.mensaje || 'Registro completado.';
-
-      if (data.redirect) {
-        mensaje.className = 'exito mostrar';
-        form.reset();
-        setTimeout(() => {
-          mensaje.classList.remove('mostrar');
-          window.location.href = data.redirect;
-        }, 2000);
-      } else if (res.ok) {
-        mensaje.className = 'exito mostrar';
-        setTimeout(() => mensaje.classList.remove('mostrar'), 3000);
-      } else {
-        mensaje.className = 'error mostrar';
-        setTimeout(() => mensaje.classList.remove('mostrar'), 3000);
+        mostrarAlerta(alerta, 'error', 'No se pudo conectar con el servidor.');
+        boton.disabled = false;
       }
     });
   </script>
