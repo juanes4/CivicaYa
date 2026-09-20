@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cívica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+        }
+
+        /* Barra superior igual a los otros HTMLs */
+        .barra-superior {
+            background-color: #8CC63F;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .barra-superior .izquierda {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .barra-superior .izquierda a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .barra-superior .izquierda a:hover {
+            text-decoration: underline;
+        }
+
+        .barra-superior .centro img {
+            height: 30px;
+        }
+
+        .barra-superior .derecha {
+            display: flex;
+            align-items: center;
+        }
+
+        .barra-superior .derecha input[type="text"] {
+            padding: 6px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            width: 160px;
+        }
+
+        .barra-superior .derecha button {
+            background-color: #ccc;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        /* Línea gris inferior */
+        .barra-inferior {
+            height: 10px;
+            background-color: #444;
+        }
+
+        #info,
+        #noSolicitud {
+            max-width: 500px;
+            margin: 40px auto;
+            font-size: 1.1em;
+            background: #f9fff5;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+            padding: 24px 28px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            border: 1px solid #b2d98c;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #e6f7d4;
+            color: #333;
+        }
+
+        a {
+            color: #007bff;
+        }
+
+        @media (max-width: 600px) {
+
+            #info,
+            #noSolicitud {
+                padding: 12px 6px;
+            }
+
+            .barra-superior {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .barra-superior .derecha {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Barra Superior igual a los otros HTMLs -->
+    <div class="barra-superior">
+        <div class="izquierda">
+            <a href="/Project/index.html">INICIO</a>
+            <span>|</span>
+
+        </div>
+        <div class="centro">
+            <img src="WhatsApp Image 2025-06-03 at 9.26.30 PM.jpeg" alt="Cívica logo" style="height: 30px;">
+        </div>
+        <div class="derecha">
+            <input type="text" placeholder="Buscar...">
+            <button title="Buscar">🔍</button>
+        </div>
+    </div>
+    <div class="barra-inferior"></div>
+
+    <div id="info" style="display:none;">
+        <h2>Información de tu Solicitud Cívica</h2>
+        <table>
+            <tbody id="datosSolicitud"></tbody>
+        </table>
+    </div>
+    <div id="noSolicitud" style="display:none;">
+        <p>No has hecho una solicitud para la cívica.</p>
+        <a id="linkSolicitud" href="#">Ir a solicitar mi cívica</a>
+    </div>
+
+    <script>
+        fetch('/usuario-actual')
+            .then(res => res.json())
+            .then(session => {
+                if (!session.correo) {
+                    document.body.innerHTML = "<h2>Error: No se encontró el correo de sesión.</h2>";
+                } else {
+                    fetch(`/solicitud-usuario?correo=${encodeURIComponent(session.correo)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.existe) {
+                                document.getElementById('info').style.display = '';
+                                const tbody = document.getElementById('datosSolicitud');
+                                tbody.innerHTML = `
+                                    <tr><th>Nombre</th><td>${data.Nombre}</td></tr>
+                                    <tr><th>Apellido</th><td>${data.Apellido}</td></tr>
+                                    <tr><th>Cédula</th><td>${data.Cedula}</td></tr>
+                                    <tr><th>Correo</th><td>${data.Correo}</td></tr>
+                                    <tr><th>Estado</th><td>${data.Estado}</td></tr>
+                                    <tr><th>Sucursal</th><td>${data.Nombre_Sucursal}</td></tr>
+                                `;
+                            } else {
+                                document.getElementById('noSolicitud').style.display = '';
+                                const link = document.getElementById('linkSolicitud');
+                                link.href = `/Project/ModuloUser.html?correo=${encodeURIComponent(session.correo)}`;
+                            }
+                        });
+                }
+            })
+            .catch(error => {
+                document.body.innerHTML = "<h2>Error al obtener datos de la sesión o solicitud.</h2>";
+                console.error('Error:', error);
+            });
+    </script>
+</body>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario Cívica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+
+    /* Barra superior */
+    .barra-superior {
+      background-color: #7ac142;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .barra-superior .inicio {
+      font-weight: bold;
+    }
+
+    .barra-superior .buscar {
+      display: flex;
+      align-items: center;
+    }
+
+    .barra-superior input[type="text"] {
+      padding: 5px;
+      border: none;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+
+    .barra-superior img.logo {
+      height: 25px;
+      margin-left: 20px;
+    }
+
+    .barra-superior img.metro {
+      height: 30px;
+    }
+
+    /* Encabezado y formulario */
+    h2 {
+      text-align: center;
+      margin: 30px 0 10px;
+      font-weight: bold;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto 20px;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-size: 14px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    label.required::after {
+      content: " *";
+      color: red;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f4f0f0;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background-color: #43b02a;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #379021;
+    }
+
+    #mensaje {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    a {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      text-decoration: none;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra superior -->
+  <div class="barra-superior">
+    <div class="inicio">INICIO</div>
+    <img src="img/WhatsApp Image 2025-06-03 at 9.26.30 PM.jpeg" alt="Logo Cívica" class="logo">
+    <div class="buscar">
+      <input type="text" placeholder="Buscar...">
+      <img src="search.png" alt="Buscar" width="20">
+      <img src="img/21012b36-7535-432d-a495-0d3e928a8b33.jpg" alt="Logo Metro" class="metro">
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <form id="formSolicitud">
+    <h2>Formulario Tarjeta Cívica</h2>
+
+    <label class="required" for="nombre">Nombre</label>
+    <input type="text" id="nombre" name="nombre" required>
+
+    <label class="required" for="apellido">Apellido</label>
+    <input type="text" id="apellido" name="apellido" required>
+
+    <label class="required" for="cedula">Número de Identificación</label>
+    <input type="text" id="cedula" name="cedula" required>
+
+    <label class="required" for="fecha_nacimiento">Fecha de Nacimiento</label>
+    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+
+    <label class="required" for="correo">Correo Electrónico</label>
+    <input type="email" id="correo" name="correo" required readonly>
+
+    <label for="telefono">Teléfono</label>
+    <input type="text" id="telefono" name="telefono" required>
+
+    <label for="direccion">Dirección</label>
+    <input type="text" id="direccion" name="direccion">
+
+    <label class="required" for="sucursal">Lugar Reclamo Tarjeta</label>
+    <select id="sucursal" name="sucursal" required>
+      <option value="">Seleccione una sucursal</option>
+      <option value="Acevedo">Acevedo</option>
+      <option value="Itagui">Itagui</option>
+      <option value="San Antonio">San Antonio</option>
+    </select>
+
+    <button type="submit">Registrar Solicitud</button>
+
+    <div id="mensaje"></div>
+    <a href="/logout">Cerrar sesión</a>
+  </form>
+
+  <!-- Script para autocompletar correo y enviar datos -->
+  <script>
+    const form = document.getElementById('formSolicitud');
+    const mensaje = document.getElementById('mensaje');
+    let correoSesion = "";
+
+    fetch('/usuario-actual')
+      .then(res => {
+        if (!res.ok) throw new Error('No autenticado');
+        return res.json();
+      })
+      .then(data => {
+        correoSesion = data.correo;
+        const inputCorreo = document.getElementById('correo');
+        inputCorreo.value = correoSesion;
+        inputCorreo.readOnly = true;
+      })
+      .catch(() => {
+        window.location.href = '/Project/InicioSesion.html';
+      });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const datos = {
+        nombre: form.nombre.value.trim(),
+        apellido: form.apellido.value.trim(),
+        cedula: form.cedula.value.trim(),
+        fecha_nacimiento: form.fecha_nacimiento.value,
+        correo: correoSesion,
+        telefono: form.telefono.value.trim(),
+        direccion: form.direccion.value.trim(),
+        sucursal: form.sucursal.value
+      };
+
+      if (!datos.nombre || !datos.apellido || !datos.cedula || !datos.fecha_nacimiento || !datos.correo || !datos.sucursal || !datos.telefono) {
+        mensaje.textContent = "Por favor, completa todos los campos obligatorios.";
+        mensaje.style.color = "red";
+        return;
+      }
+
+      if (datos.cedula.length > 10 || datos.cedula.length < 6)  {
+        mensaje.textContent = "La cédula debe tener entre 6 y 10 dígitos numéricos.";
+        mensaje.style.color = "red";
+        return;
+      }
+
+      if (!/^\d+$/.test(datos.cedula)) {
+        mensaje.textContent = "La cédula solo debe contener números.";
+        mensaje.style.color = "red";
+        return;
+      }
+
+      if (!/^\d+$/.test(datos.telefono)) {
+        mensaje.textContent = "El teléfono solo debe contener números.";
+        mensaje.style.color = "red";
+        return;
+      }
+
+      const res = await fetch('/registrar-solicitud', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+
+      let respuesta;
+      try {
+        respuesta = await res.json();
+      } catch {
+        // Si no es JSON, intenta mostrar el texto plano
+        const errorMsg = await res.text();
+        mensaje.textContent = errorMsg || "Ocurrió un error inesperado.";
+        mensaje.style.color = "red";
+        return;
+      }
+      if (respuesta.redirect) {
+        mensaje.textContent = respuesta.mensaje || "Solicitud registrada exitosamente.";
+        mensaje.style.color = "green";
+        setTimeout(() => {
+          window.location.href = '/Project/ModuloUC.html';
+        }, 1800);
+      } else if (respuesta.mensaje) {
+        mensaje.textContent = respuesta.mensaje;
+        mensaje.style.color = "green";
+      } else {
+        mensaje.textContent = "Ocurrió un error.";
+        mensaje.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>

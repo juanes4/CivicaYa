@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitudes de Usuarios</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f5f5f5;
+    }
+
+    header {
+      background: #7AC11E;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 50px;
+      margin-right: 15px;
+    }
+
+    .logo h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      margin: 10px 20px;
+    }
+
+    nav button {
+      background-color: #7AC11E;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    nav button:hover {
+      background-color: #6aa81b;
+    }
+
+    .filtro {
+      margin: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filtro label {
+      font-weight: bold;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 95%;
+      margin: 0 auto 30px;
+      background-color: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+
+    td button {
+      padding: 8px 12px;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 2px;
+    }
+
+    .btn-confirmar {
+      background-color: #00AEEF;
+    }
+
+    .btn-entregar {
+      background-color: #EF4136;
+    }
+
+    .estado {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+
+    a {
+      display: block;
+      text-align: center;
+      margin: 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        display: none;
+      }
+
+      td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+      }
+
+      td::before {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        font-weight: bold;
+      }
+
+      td:nth-child(1)::before { content: "Nombre"; }
+      td:nth-child(2)::before { content: "Apellido"; }
+      td:nth-child(3)::before { content: "Cédula"; }
+      td:nth-child(4)::before { content: "Sucursal"; }
+      td:nth-child(5)::before { content: "Estado"; }
+      td:nth-child(6)::before { content: "Acciones"; }
+
+      .filtro {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <!-- Aquí va el logo principal de Cívica -->
+      <img src="WhatsApp Image 2025-06-03 at 9.26.30 PM.jpeg" alt="Logo Cívica" style="height: 30px;">
+      <h1>SISTEMA SOLICITUD CÍVICA</h1>
+    </div>
+    <img src="21012b36-7535-432d-a495-0d3e928a8b33.jpg"Logo Metro" style="height: 60px;">
+  </header>
+
+
+  <div class="filtro">
+    <label for="filtroSucursal">Filtrar por sucursal:</label>
+    <select id="filtroSucursal">
+      <option value="">Todas</option>
+      <option value="Acevedo">Acevedo</option>
+      <option value="Itagui">Itagui</option>
+      <option value="San Antonio">San Antonio</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Cédula</th>
+        <th>Nombre Sucursal</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="tablaSolicitudes">
+      <!-- Aquí se insertarán las filas -->
+    </tbody>
+  </table>
+
+  <a href="/logout">Cerrar sesión</a>
+
+  <script>
+    function cargarSolicitudes() {
+      const sucursal = document.getElementById('filtroSucursal').value;
+      let url = '/solicitudes-Entregadas';
+      if (sucursal) {
+        url += '?sucursal=' + encodeURIComponent(sucursal);
+      }
+      fetch(url)
+        .then(res => res.json())
+        .then(datos => {
+          const tbody = document.getElementById('tablaSolicitudes');
+          tbody.innerHTML = '';
+          datos.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${s.Nombre}</td>
+              <td>${s.Apellido}</td>
+              <td>${s.Cedula}</td>
+              <td>${s.Nombre_Sucursal}</td>
+              <td class="estado">${s.Estado}</td>
+              <td>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+
+    document.getElementById('filtroSucursal').addEventListener('change', cargarSolicitudes);
+
+    function cambiarEstado(cedula, nuevoEstado) {
+      fetch('/cambiar-estado', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cedula, estado: nuevoEstado })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        cargarSolicitudes();
+      });
+    }
+
+    cargarSolicitudes();
+  </script>
+</body>
+</html>

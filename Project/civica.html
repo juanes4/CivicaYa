@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta Cívica</title>
+    <style>
+        .contenedor-civica {
+            position: relative;
+            display: inline-block;
+        }
+        .imagen {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            display: block;
+        }
+        .datos-civica {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            color: #222;
+            background: #80a811;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            text-align: left;
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor-civica">
+        <img src="img/Captura de pantalla 2025-06-02 202308.png" class="imagen" alt="Tarjeta Cívica">
+        <div id="datosPersona" class="datos-civica"></div>
+    </div>
+    <script>
+        window.onload = async function() {
+            const params = new URLSearchParams(window.location.search);
+            const cedula = params.get('cedula');
+            if (!cedula) return;
+
+            const res = await fetch(`/datos-persona?cedula=${cedula}`);
+            const data = await res.json();
+            if (data.existe) {
+                document.getElementById('datosPersona').innerHTML = `
+                    ${data.Nombre}<br>
+                    ${data.Apellido}<br>
+                    c.c. ${data.Cedula}
+                `;
+            } else {
+                document.getElementById('datosPersona').textContent = 'No se encontraron datos.';
+            }
+        };
+    </script><button onclick="window.location.href='/Project/ModuloAdmin.html'" style="margin-top:20px;">Volver a Módulo Admin</button>
+</body>
+</html>

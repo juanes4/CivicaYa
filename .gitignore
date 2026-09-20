@@ -1,0 +1,23 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (secretos)
+.env
+.env.*
+!.env.example
+
+# Bases de datos locales (contienen datos personales)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

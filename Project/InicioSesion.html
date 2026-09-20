@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* Barra superior */
+        .top-bar {
+            background-color: #86C015;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .top-bar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .header {
+            background-color: #f9f9f9;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header .search {
+            display: flex;
+            align-items: center;
+        }
+
+        .header input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .header .search-icon {
+            margin-left: 10px;
+        }
+
+        .divider {
+            height: 10px;
+            background-color: #444;
+        }
+
+        /* Formulario de inicio de sesión */
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            background-color: #86C015;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .login-container label {
+            display: block;
+            text-align: left;
+            margin: 10px 0 5px;
+            font-size: 14px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            background-color: #f7f2f2;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #86C015;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .login-container .links {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .login-container .links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        .login-container .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Barra superior -->
+    <div class="top-bar">
+        <div><a href="/">INICIO</a> | <a href="#">INICIAR SESIÓN</a></div>
+    
+    </div>
+
+    <!-- Encabezado -->
+    <div class="header">
+        <div class="logo">Cívica</div>
+        <div class="search">
+            <input type="text" placeholder="Buscar...">
+            <img src="img/search.png" alt="Buscar" width="20" class="search-icon">
+            <img src="img/21012b36-7535-432d-a495-0d3e928a8b33.jpg" width="30">
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Formulario -->
+    <div class="login-container">
+        <h2>INICIAR SESIÓN</h2>
+        <form action="/login" method="POST">
+            <label for="correo">Correo *</label>
+            <input type="email" id="correo" name="correo" required>
+
+            <label for="contrasena">Contraseña *</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+
+            <button type="submit">ENTRAR</button>
+
+            <div class="links">
+                <a href="#" onclick="alert('Recordala hp'); return false;">Olvidaste la Contraseña</a> |
+                <a href="/Project/Registrarse.html">Registrarse</a>
+            </div>
+        </form>
+    </div>
+
+</body>
+
+</html>

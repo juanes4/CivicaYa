@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inicio Cívica</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Barra superior */
+    .topbar {
+      background-color: #8bc500;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+      font-size: 0.9em;
+    }
+
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 0 10px;
+    }
+
+    .topbar a:hover {
+      text-decoration: underline;
+    }
+
+    .middlebar {
+      background-color: #f4f4f4;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .metro-logo {
+      width: 40px;
+      height: auto;
+    }
+
+    /* Banner principal */
+    .banner {
+      background: linear-gradient(to right, #77dd77, #a2e38f);
+      color: white;
+      padding: 50px 30px;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .banner .text {
+      max-width: 600px;
+    }
+
+    .banner h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .banner .btn {
+      background-color: #6a1b9a;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .banner .btn:hover {
+      background-color: #4a148c;
+    }
+
+    .banner .image-placeholder {
+      width: 300px;
+      height: 200px;
+      background-color: #ddd;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 0.9em;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .banner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .banner .image-placeholder {
+        width: 90%;
+        height: 180px;
+      }
+
+      .topbar,
+      .middlebar {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .search-box {
+        justify-content: center;
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div>
+      <a href="#">INICIO</a> | 
+      <a href="Project/inicioSesion.html">INICIAR SESIÓN</a>
+    </div>
+
+  </div>
+
+  <div class="middlebar">
+    <div class="logo">Cívica</div>
+    <div class="search-box">
+      <input type="text" placeholder="Buscar..." />
+      🔍
+      <img src="Project/img/21012b36-7535-432d-a495-0d3e928a8b33.jpg" class="metro-logo" alt="Logo Metro de Medellín">
+    </div>
+  </div>
+
+  <div class="banner">
+    <div class="text">
+      <h1>Ahora será más fácil ingresar con tu bici o monopatín a nuestra red Metro</h1>
+      <a class="btn" href="#">Conoce aquí</a>
+    </div>
+    <div class="image-placeholder">
+      <img src="Project/img/index (1)_preview_rev_1.png" height="300px">
+    </div>
+  </div>
+</body>
+
+</html>
