@@ -37,6 +37,11 @@
       min-width: 220px;
     }
 
+    .subtitulo {
+      margin: 36px 0 14px;
+      font-size: 1.25rem;
+    }
+
     .btn-accion {
       padding: 8px 14px;
       font-size: 0.85rem;
@@ -95,11 +100,27 @@
             <th>Apellido</th>
             <th>Cédula</th>
             <th>Punto de atención</th>
+            <th>Cita</th>
             <th>Estado</th>
             <th>Acción</th>
           </tr>
         </thead>
         <tbody id="tablaSolicitudes"></tbody>
+      </table>
+    </div>
+
+    <h2 class="subtitulo">Personas que piden que las llamemos</h2>
+    <div class="tabla-scroll">
+      <table class="apilable">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Celular</th>
+            <th>Registrada (UTC)</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaLlamadas"></tbody>
       </table>
     </div>
   </main>
@@ -129,7 +150,7 @@
       alerta.textContent = '';
 
       if (datos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="vacio">No hay solicitudes en curso.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="vacio">No hay solicitudes en curso.</td></tr>';
         return;
       }
       tbody.innerHTML = datos.map((s) => {
@@ -143,6 +164,7 @@
             <td data-label="Apellido">${esc(s.Apellido)}</td>
             <td data-label="Cédula">${esc(s.Cedula)}</td>
             <td data-label="Punto de atención">${esc(s.Nombre_Sucursal)}</td>
+            <td data-label="Cita">${s.Fecha_Cita ? esc(formatearFecha(s.Fecha_Cita) + ', ' + formatearHora(s.Hora_Cita)) : 'Sin cita'}</td>
             <td data-label="Estado"><span class="estado estado-${esc(s.Estado)}">${esc(s.Estado)}</span></td>
             <td data-label="Acción">${boton}</td>
           </tr>`;
@@ -171,6 +193,33 @@
     });
 
     filtro.addEventListener('change', cargarSolicitudes);
+
+    // Personas que dejaron su número para que las llamemos
+    const tbodyLlamadas = document.getElementById('tablaLlamadas');
+
+    async function cargarLlamadas() {
+      const { ok, datos } = await pedirJSON('/llamadas');
+      if (!ok || !Array.isArray(datos)) return;
+      tbodyLlamadas.innerHTML = datos.length === 0
+        ? '<tr><td colspan="4" class="vacio">No hay llamadas pendientes.</td></tr>'
+        : datos.map((l) => `
+          <tr>
+            <td data-label="Nombre">${esc(l.Nombre)}</td>
+            <td data-label="Celular">${esc(l.Celular)}</td>
+            <td data-label="Registrada (UTC)">${esc(l.Creada)}</td>
+            <td data-label="Acción"><button class="btn btn-accion" data-llamada="${esc(l.id_Llamada)}">Ya la llamé</button></td>
+          </tr>`).join('');
+    }
+
+    tbodyLlamadas.addEventListener('click', async (e) => {
+      const boton = e.target.closest('button[data-llamada]');
+      if (!boton) return;
+      boton.disabled = true;
+      await enviarJSON('/llamada-atendida', { id: boton.dataset.llamada });
+      cargarLlamadas();
+    });
+
+    cargarLlamadas();
 
     cargarPuntos(filtro).then(cargarSolicitudes);
   </script>

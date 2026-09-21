@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const puntos = require('./puntos');
+const horarios = require('./horarios');
 
 const app = express();
 
@@ -58,6 +59,20 @@ const get = (sql, params = []) => new Promise((resolve, reject) => {
 const all = (sql, params = []) => new Promise((resolve, reject) => {
     db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows));
 });
+
+// Pone al día una base creada antes de los horarios: crea las tablas que falten (schema.sql)
+// y agrega a Solicitudes las columnas de la cita.
+const COLUMNAS_CITA = ['Fecha_Cita', 'Hora_Cita', 'Codigo_Cita'];
+
+async function migrar() {
+    const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    await new Promise((resolve, reject) => db.exec(schema, (err) => err ? reject(err) : resolve()));
+    const existentes = (await all('PRAGMA table_info(Solicitudes)')).map((c) => c.name);
+    for (const columna of COLUMNAS_CITA) {
+        if (!existentes.includes(columna)) await run(`ALTER TABLE Solicitudes ADD COLUMN ${columna} TEXT`);
+    }
+    await run('CREATE INDEX IF NOT EXISTS idx_solicitudes_cita ON Solicitudes (id_Sucursal, Fecha_Cita, Hora_Cita)');
+}
 
 const texto = (valor) => String(valor ?? '').trim();
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -203,6 +218,167 @@ app.get('/puntos', (req, res) => {
     })));
 });
 
+// --- Horarios y cupos ---
+
+const FECHA_VALIDA = /^\d{4}-\d{2}-\d{2}$/;
+const HORA_VALIDA = /^\d{2}:\d{2}$/;
+
+async function buscarPunto(nombre) {
+    return get('SELECT id_Sucursal FROM Sucursales WHERE Nombre_Sucursal = ?', [texto(nombre)]);
+}
+
+// Citas ocupadas por franja: Map 'AAAA-MM-DD HH:MM' → cantidad (las canceladas liberan el cupo)
+async function ocupacion(idSucursal, fechas) {
+    if (fechas.length === 0) return new Map();
+    const filas = await all(
+        `SELECT Fecha_Cita, Hora_Cita, COUNT(*) AS n FROM Solicitudes
+         WHERE id_Sucursal = ? AND Fecha_Cita IN (${fechas.map(() => '?').join(',')}) AND Estado != 'CANCELADA'
+         GROUP BY Fecha_Cita, Hora_Cita`,
+        [idSucursal, ...fechas]
+    );
+    return new Map(filas.map((f) => [`${f.Fecha_Cita} ${f.Hora_Cita}`, f.n]));
+}
+
+// Todas las franjas de un día con sus cupos. `disponible` es falso cuando ya no se puede reservar
+// por tiempo (p. ej. las de hoy que quedan a menos de 2 horas); `libres` es 0 cuando se agotó el cupo.
+function franjasDelDia(fecha, ocupadas) {
+    return horarios.FRANJAS.map(({ hora, cupos }) => ({
+        hora,
+        cupos,
+        libres: Math.max(0, cupos - (ocupadas.get(`${fecha} ${hora}`) || 0)),
+        disponible: horarios.franjaReservable(fecha, hora)
+    }));
+}
+
+// Tabla de un PAC: los próximos días con todas sus franjas, más la información de atención sin cita
+app.get('/horarios/tabla', requiereSesion, async (req, res) => {
+    try {
+        const punto = await buscarPunto(req.query.sucursal);
+        if (!punto) return res.status(400).json({ mensaje: 'Selecciona un punto de atención válido.' });
+        const fechas = horarios.fechasReservables();
+        const ocupadas = await ocupacion(punto.id_Sucursal, fechas);
+        const dias = fechas
+            .map((fecha) => ({ fecha, franjas: franjasDelDia(fecha, ocupadas) }))
+            .filter(({ franjas }) => franjas.some((f) => f.disponible));
+        res.json({
+            hoy: horarios.hoy(), // para rotular "Hoy" y "Mañana" con la fecha de Colombia
+            dias,
+            sinCita: {
+                presenciales: horarios.CONFIG.CUPOS_PRESENCIALES_DIA,
+                asistidos: horarios.CONFIG.CUPOS_ASISTIDOS_DIA
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error al consultar los horarios.' });
+    }
+});
+
+// Código corto de la cita (ej. CV-4821), distinto de los de las citas vigentes
+async function generarCodigoCita() {
+    for (let intento = 0; intento < 20; intento++) {
+        const codigo = `CV-${crypto.randomInt(1000, 10000)}`;
+        const usado = await get("SELECT 1 FROM Solicitudes WHERE Codigo_Cita = ? AND Estado != 'CANCELADA'", [codigo]);
+        if (!usado) return codigo;
+    }
+    throw new Error('No se pudo generar un código de cita');
+}
+
+// Un mismo texto de error para cualquier fecha/hora que no se pueda reservar
+const CITA_INVALIDA = 'Elige un día y una hora disponibles.';
+const SIN_CUPOS = 'Esa hora ya no tiene cupos. Elige otra, por favor.';
+
+function citaValida(fecha, hora) {
+    return FECHA_VALIDA.test(fecha) && HORA_VALIDA.test(hora) && horarios.franjaReservable(fecha, hora);
+}
+
+// Cambia la fecha y hora de la cita en el mismo PAC (a otro PAC se llega cancelando y pidiendo de nuevo)
+app.post('/reprogramar-cita', requiereSesion, async (req, res) => {
+    const fecha = texto(req.body.fecha);
+    const hora = texto(req.body.hora);
+    if (!citaValida(fecha, hora)) return res.status(400).json({ mensaje: CITA_INVALIDA });
+
+    try {
+        const solicitud = await get(
+            `SELECT so.id_Solicitud, so.id_Sucursal, so.Codigo_Cita
+             FROM Solicitudes so JOIN Usuarios u ON u.Id_Usuario = so.Id_Usuario
+             WHERE u.Correo = ? AND so.Estado IN ('PENDIENTE', 'CONFIRMADO')
+             ORDER BY so.id_Solicitud DESC LIMIT 1`,
+            [req.session.usuario]
+        );
+        if (!solicitud) return res.status(404).json({ mensaje: 'No tienes una solicitud en curso.' });
+
+        const codigo = solicitud.Codigo_Cita || await generarCodigoCita();
+        // El cupo se comprueba y se toma en una sola sentencia, así nunca se pasa de la capacidad
+        const resultado = await run(
+            `UPDATE Solicitudes SET Fecha_Cita = ?, Hora_Cita = ?, Codigo_Cita = ?
+             WHERE id_Solicitud = ?
+               AND (SELECT COUNT(*) FROM Solicitudes
+                    WHERE id_Sucursal = ? AND Fecha_Cita = ? AND Hora_Cita = ? AND Estado != 'CANCELADA'
+                      AND id_Solicitud != ?) < ?`,
+            [fecha, hora, codigo, solicitud.id_Solicitud,
+             solicitud.id_Sucursal, fecha, hora, solicitud.id_Solicitud, horarios.capacidad(hora)]
+        );
+        if (!resultado.changes) return res.status(409).json({ mensaje: SIN_CUPOS });
+        res.json({ mensaje: 'Tu cita fue actualizada.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error al cambiar la cita.' });
+    }
+});
+
+// Cancelar la solicitud libera el cupo de la cita (solo mientras la Cívica aún no está lista)
+app.post('/cancelar-solicitud', requiereSesion, async (req, res) => {
+    try {
+        const resultado = await run(
+            `UPDATE Solicitudes SET Estado = 'CANCELADA'
+             WHERE Estado = 'PENDIENTE' AND Id_Usuario = (SELECT Id_Usuario FROM Usuarios WHERE Correo = ?)`,
+            [req.session.usuario]
+        );
+        if (!resultado.changes) return res.status(409).json({ mensaje: 'No hay una solicitud pendiente para cancelar.' });
+        res.json({ mensaje: 'Tu solicitud fue cancelada y el cupo quedó libre.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error al cancelar la solicitud.' });
+    }
+});
+
+// "¿Prefiere que lo llamemos?": guarda el nombre y el celular para que un asesor llame
+// TODO producción: limitar peticiones (rate limit) y avisar al equipo de atención.
+app.post('/solicitar-llamada', requiereSesion, async (req, res) => {
+    const nombre = texto(req.body.nombre);
+    const celular = texto(req.body.celular);
+    if (!nombre || nombre.length > 60) return res.status(400).json({ mensaje: 'Escribe tu nombre.' });
+    if (!/^\d{7,12}$/.test(celular)) return res.status(400).json({ mensaje: 'El celular debe tener entre 7 y 12 dígitos numéricos.' });
+    try {
+        await run('INSERT INTO Llamadas (Nombre, Celular) VALUES (?, ?)', [nombre, celular]);
+        res.json({ mensaje: 'Listo. Un asesor te llamará.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error al guardar tu solicitud.' });
+    }
+});
+
+app.get('/llamadas', soloAdmin, async (req, res) => {
+    try {
+        res.json(await all('SELECT id_Llamada, Nombre, Celular, Creada FROM Llamadas ORDER BY id_Llamada'));
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error al consultar las llamadas.' });
+    }
+});
+
+app.post('/llamada-atendida', soloAdmin, async (req, res) => {
+    try {
+        const resultado = await run('DELETE FROM Llamadas WHERE id_Llamada = ?', [Number(req.body.id)]);
+        if (!resultado.changes) return res.status(404).json({ mensaje: 'La llamada ya no existe.' });
+        res.json({ mensaje: 'Llamada marcada como atendida.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error al actualizar la llamada.' });
+    }
+});
+
 // --- Solicitudes ---
 
 function fechaNacimientoValida(fecha) {
@@ -220,10 +396,16 @@ app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
     const telefono = texto(req.body.telefono);
     const direccion = texto(req.body.direccion);
     const sucursal = texto(req.body.sucursal);
+    const fechaCita = texto(req.body.fecha);
+    const horaCita = texto(req.body.hora);
 
     if (!nombre || !apellido || !cedula || !fechaNacimiento || !telefono || !sucursal) {
         return res.status(400).json({ mensaje: 'Completa todos los campos obligatorios.' });
     }
+    if (req.body.acepta_datos !== true) {
+        return res.status(400).json({ mensaje: 'Debes aceptar el tratamiento de datos personales.' });
+    }
+    if (!citaValida(fechaCita, horaCita)) return res.status(400).json({ mensaje: CITA_INVALIDA });
     if (nombre.length > 60 || apellido.length > 60 || direccion.length > 150) {
         return res.status(400).json({ mensaje: 'Alguno de los textos es demasiado largo.' });
     }
@@ -237,7 +419,9 @@ app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
 
         const previos = await all('SELECT Id_Usuario, Cedula, Correo FROM Usuarios WHERE Cedula = ? OR Correo = ?', [cedula, correo]);
         let idUsuario;
+        let usuarioNuevo = false;
         if (previos.length === 0) {
+            usuarioNuevo = true;
             const nuevo = await run(
                 `INSERT INTO Usuarios (Nombre, Apellido, Cedula, Fecha_Nacimiento, Correo, Telefono, Direccion)
                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -259,14 +443,28 @@ app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
             });
         }
 
-        const enCurso = await get("SELECT 1 FROM Solicitudes WHERE Id_Usuario = ? AND Estado != 'ENTREGADO'", [idUsuario]);
+        const enCurso = await get(
+            "SELECT 1 FROM Solicitudes WHERE Id_Usuario = ? AND Estado NOT IN ('ENTREGADO', 'CANCELADA')",
+            [idUsuario]
+        );
         if (enCurso) return res.status(409).json({ mensaje: 'Ya existe una solicitud en curso para esta persona.' });
 
         const codigoBarras = `${cedula}${crypto.randomInt(1000000000, 10000000000)}`;
-        await run(
-            "INSERT INTO Solicitudes (Id_Usuario, id_Sucursal, Estado, Codigo_Barras) VALUES (?, ?, 'PENDIENTE', ?)",
-            [idUsuario, punto.id_Sucursal, codigoBarras]
+        const codigoCita = await generarCodigoCita();
+        // El cupo se comprueba y se toma en una sola sentencia, así nunca se pasa de la capacidad
+        const resultado = await run(
+            `INSERT INTO Solicitudes (Id_Usuario, id_Sucursal, Estado, Codigo_Barras, Fecha_Cita, Hora_Cita, Codigo_Cita)
+             SELECT ?, ?, 'PENDIENTE', ?, ?, ?, ?
+             WHERE (SELECT COUNT(*) FROM Solicitudes
+                    WHERE id_Sucursal = ? AND Fecha_Cita = ? AND Hora_Cita = ? AND Estado != 'CANCELADA') < ?`,
+            [idUsuario, punto.id_Sucursal, codigoBarras, fechaCita, horaCita, codigoCita,
+             punto.id_Sucursal, fechaCita, horaCita, horarios.capacidad(horaCita)]
         );
+        if (!resultado.changes) {
+            // No dejar guardada una persona sin solicitud: si corrige un dato y reintenta, no chocaría con esta cédula
+            if (usuarioNuevo) await run('DELETE FROM Usuarios WHERE Id_Usuario = ?', [idUsuario]);
+            return res.status(409).json({ mensaje: SIN_CUPOS });
+        }
         res.json({ redirect: '/Project/ModuloUC.html', mensaje: 'Solicitud registrada exitosamente.' });
     } catch (err) {
         console.error(err);
@@ -278,18 +476,19 @@ function listarSolicitudes(entregadas) {
     return async (req, res) => {
         const sucursal = req.query.sucursal;
         let sql = `
-            SELECT u.Nombre, u.Apellido, u.Cedula, s.Nombre_Sucursal, so.Estado
+            SELECT u.Nombre, u.Apellido, u.Cedula, s.Nombre_Sucursal, so.Estado, so.Fecha_Cita, so.Hora_Cita
             FROM Solicitudes so
             JOIN Usuarios u ON so.Id_Usuario = u.Id_Usuario
             JOIN Sucursales s ON so.id_Sucursal = s.id_Sucursal
-            WHERE so.Estado ${entregadas ? '=' : '!='} 'ENTREGADO'
+            WHERE so.Estado ${entregadas ? "= 'ENTREGADO'" : "NOT IN ('ENTREGADO', 'CANCELADA')"}
         `;
         const params = [];
         if (sucursal) {
             sql += ' AND s.Nombre_Sucursal = ?';
             params.push(sucursal);
         }
-        sql += ' ORDER BY so.id_Solicitud';
+        // Las citas más próximas primero; las solicitudes sin cita (anteriores a los horarios) al final
+        sql += ' ORDER BY so.Fecha_Cita IS NULL, so.Fecha_Cita, so.Hora_Cita, so.id_Solicitud';
         try {
             res.json(await all(sql, params));
         } catch (err) {
@@ -347,7 +546,8 @@ app.post('/eliminar-usuario', soloAdmin, async (req, res) => {
 app.get('/solicitud-usuario', requiereSesion, async (req, res) => {
     try {
         const fila = await get(
-            `SELECT u.Nombre, u.Apellido, u.Cedula, u.Correo, s.Nombre_Sucursal, so.Estado, so.Codigo_Barras
+            `SELECT u.Nombre, u.Apellido, u.Cedula, u.Correo, s.Nombre_Sucursal, so.Estado, so.Codigo_Barras,
+                    so.Fecha_Cita, so.Hora_Cita, so.Codigo_Cita
              FROM Usuarios u
              JOIN Solicitudes so ON u.Id_Usuario = so.Id_Usuario
              JOIN Sucursales s ON so.id_Sucursal = s.id_Sucursal
@@ -392,6 +592,12 @@ app.use((err, req, res, next) => {
 
 // Iniciar el servidor
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Servidor iniciado en http://localhost:${port}`);
+migrar().then(() => {
+    app.listen(port, () => {
+        console.log(`Servidor iniciado en http://localhost:${port}`);
+    });
+}).catch((err) => {
+    console.error(`No se pudo preparar la base de datos: ${err.message}`);
+    console.error('Ejecuta "npm run db:init" para crearla.');
+    process.exit(1);
 });

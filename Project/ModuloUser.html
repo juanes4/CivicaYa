@@ -68,24 +68,47 @@
         <option value="">Selecciona un punto de atención</option>
       </select>
 
-      <button type="submit" class="btn btn-bloque">Registrar solicitud</button>
+      <div id="selectorCita"></div>
+
+      <!-- TODO producción: enlazar la política de tratamiento de datos completa -->
+      <label class="casilla" for="acepta_datos">
+        <input type="checkbox" id="acepta_datos" name="acepta_datos" required>
+        <span>Autorizo el tratamiento de mis datos personales, conforme a la Ley 1581 de 2012, solo para gestionar la entrega de mi Cívica.</span>
+      </label>
+
+      <button type="submit" class="btn btn-bloque">Registrar solicitud y reservar cita</button>
     </form>
+
+    <div id="avisoLlamada"></div>
   </main>
 
   <script src="/Project/js/util.js"></script>
+  <script src="/Project/js/citas.js"></script>
   <script>
     const form = document.getElementById('formSolicitud');
     const alerta = document.getElementById('alerta');
-    const boton = form.querySelector('button');
+    const boton = form.querySelector('button[type="submit"]');
+    // «Continuar» lleva a la autorización de datos, el último paso antes de enviar
+    const cita = crearSelectorCita(document.getElementById('selectorCita'), {
+      onContinuar: () => {
+        form.acepta_datos.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        form.acepta_datos.focus({ preventScroll: true });
+      }
+    });
+    crearAvisoLlamada(document.getElementById('avisoLlamada'));
 
-    // Si ya tiene una solicitud, se le muestra su estado en lugar del formulario
+    form.sucursal.addEventListener('change', () => cita.cargar(form.sucursal.value));
+
+    // Si ya tiene una solicitud en curso, se le muestra su estado en lugar del formulario
     Promise.all([
       pedirJSON('/usuario-actual'),
       pedirJSON('/solicitud-usuario'),
       cargarPuntos(form.sucursal)
     ]).then(([sesion, solicitud, puntosOk]) => {
       if (!sesion.ok) return (window.location.href = '/Project/InicioSesion.html');
-      if (solicitud.datos.existe && solicitud.datos.Estado !== 'ENTREGADO') return (window.location.href = '/Project/ModuloUC.html');
+      if (solicitud.datos.existe && !['ENTREGADO', 'CANCELADA'].includes(solicitud.datos.Estado)) {
+        return (window.location.href = '/Project/ModuloUC.html');
+      }
       form.correo.value = sesion.datos.correo;
       if (!puntosOk) mostrarAlerta(alerta, 'error', 'No se pudieron cargar los puntos de atención. Recarga la página.');
     }).catch(() => mostrarAlerta(alerta, 'error', 'No se pudo conectar con el servidor.'));
@@ -106,6 +129,14 @@
       if (!datos.nombre || !datos.apellido || !datos.cedula || !datos.fecha_nacimiento || !datos.telefono || !datos.sucursal) {
         return mostrarAlerta(alerta, 'error', 'Por favor, completa todos los campos obligatorios.');
       }
+      const elegida = cita.valor();
+      if (!elegida) return mostrarAlerta(alerta, 'error', 'Elige el día y la hora de tu cita.');
+      if (!form.acepta_datos.checked) {
+        return mostrarAlerta(alerta, 'error', 'Debes autorizar el tratamiento de tus datos personales.');
+      }
+      datos.fecha = elegida.fecha;
+      datos.hora = elegida.hora;
+      datos.acepta_datos = true;
       if (!/^\d{6,10}$/.test(datos.cedula)) {
         return mostrarAlerta(alerta, 'error', 'La cédula debe tener entre 6 y 10 dígitos numéricos.');
       }
@@ -118,13 +149,14 @@
 
       boton.disabled = true;
       try {
-        const { ok, datos: respuesta } = await enviarJSON('/registrar-solicitud', datos);
+        const { ok, status, datos: respuesta } = await enviarJSON('/registrar-solicitud', datos);
         if (ok && respuesta.redirect) {
           mostrarAlerta(alerta, 'exito', respuesta.mensaje || 'Solicitud registrada exitosamente.');
           setTimeout(() => { window.location.href = respuesta.redirect; }, 1500);
         } else {
           mostrarAlerta(alerta, 'error', respuesta.mensaje || 'Ocurrió un error inesperado.');
           boton.disabled = false;
+          if (status === 409) cita.recargar(); // otra persona pudo tomar esa hora
         }
       } catch {
         mostrarAlerta(alerta, 'error', 'No se pudo conectar con el servidor.');

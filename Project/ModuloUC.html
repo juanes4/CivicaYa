@@ -28,6 +28,37 @@
       letter-spacing: 0.05em;
       word-break: break-all;
     }
+
+    .codigo-cita {
+      font-family: Consolas, monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--verde-oscuro);
+    }
+
+    .acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .acciones .btn {
+      flex: 1 1 160px;
+    }
+
+    .btn-peligro {
+      background: #c62828;
+    }
+
+    .btn-peligro:hover {
+      background: #a01f1f;
+    }
+
+    #panelCambio {
+      margin-top: 20px;
+    }
   </style>
 </head>
 
@@ -52,8 +83,24 @@
       <table>
         <tbody id="datosSolicitud"></tbody>
       </table>
-      <p class="enlaces" id="otraSolicitud" hidden><a href="/Project/ModuloUser.html">Solicitar otra Cívica</a></p>
+      <div id="alertaAcciones" role="alert"></div>
+      <div class="acciones no-imprimir" id="acciones">
+        <button type="button" class="btn btn-secundario" id="btnImprimir">Imprimir</button>
+        <button type="button" class="btn" id="btnCambiar" hidden>Cambiar día u hora</button>
+        <button type="button" class="btn btn-peligro" id="btnCancelar" hidden>Cancelar solicitud</button>
+      </div>
+      <p class="enlaces no-imprimir" id="otraSolicitud" hidden><a href="/Project/ModuloUser.html">Solicitar otra Cívica</a></p>
     </section>
+
+    <section id="panelCambio" class="card ancha no-imprimir" hidden>
+      <h2>Elige tu nueva cita</h2>
+      <p class="aviso">Se mantiene el mismo punto de atención. Para cambiar de punto, cancela la solicitud y pide una nueva.</p>
+      <div id="alertaCambio" role="alert"></div>
+      <div id="selectorCita"></div>
+      <button type="button" class="btn btn-secundario btn-bloque" id="btnCerrarCambio">Volver</button>
+    </section>
+
+    <div id="avisoLlamada" class="no-imprimir"></div>
 
     <section id="noSolicitud" class="card ancha" hidden>
       <h2>Aún no tienes una solicitud</h2>
@@ -65,34 +112,96 @@
   </main>
 
   <script src="/Project/js/util.js"></script>
+  <script src="/Project/js/citas.js"></script>
   <script>
     const mensajes = {
-      PENDIENTE: 'Recibimos tu solicitud. Vuelve a esta página para saber cuándo tu Cívica esté lista.',
-      CONFIRMADO: 'Tu Cívica está lista. Ve al punto de atención elegido y presenta tu documento de identidad.',
-      ENTREGADO: 'Ya reclamaste tu Cívica.'
+      PENDIENTE: 'Recibimos tu solicitud. Ve al punto de atención en el día y la hora de tu cita, y presenta tu documento de identidad.',
+      CONFIRMADO: 'Tu Cívica está lista. Ve al punto de atención en el día y la hora de tu cita y presenta tu documento de identidad.',
+      ENTREGADO: 'Ya reclamaste tu Cívica.',
+      CANCELADA: 'Cancelaste esta solicitud.'
     };
 
-    pedirJSON('/solicitud-usuario').then(({ ok, status, datos }) => {
-      if (status === 401) return (window.location.href = '/Project/InicioSesion.html');
-      if (!ok) throw new Error('Error consultando la solicitud');
+    const el = (id) => document.getElementById(id);
+    const alertaAcciones = el('alertaAcciones');
+    let cita = null;
+    let sucursal = '';
 
-      if (!datos.existe) {
-        document.getElementById('noSolicitud').hidden = false;
-        return;
-      }
-      document.getElementById('info').hidden = false;
-      document.getElementById('aviso').textContent = mensajes[datos.Estado] || '';
-      document.getElementById('otraSolicitud').hidden = datos.Estado !== 'ENTREGADO';
-      document.getElementById('datosSolicitud').innerHTML = `
+    function mostrarSolicitud(datos) {
+      const vigente = datos.Estado === 'PENDIENTE' || datos.Estado === 'CONFIRMADO';
+      sucursal = datos.Nombre_Sucursal;
+      el('info').hidden = false;
+      el('aviso').textContent = mensajes[datos.Estado] || '';
+      el('otraSolicitud').hidden = vigente;
+      el('btnCambiar').hidden = !vigente;
+      el('btnCancelar').hidden = datos.Estado !== 'PENDIENTE';
+      el('btnImprimir').hidden = !vigente;
+      const filaCita = datos.Fecha_Cita
+        ? `<tr><th>Cita</th><td>${esc(formatearFecha(datos.Fecha_Cita))}, ${esc(formatearHora(datos.Hora_Cita))}</td></tr>
+           <tr><th>Código de cita</th><td class="codigo-cita">${esc(datos.Codigo_Cita)}</td></tr>`
+        : '<tr><th>Cita</th><td>Sin cita asignada. Elige una con «Cambiar día u hora».</td></tr>';
+      el('datosSolicitud').innerHTML = `
         <tr><th>Nombre</th><td>${esc(datos.Nombre)}</td></tr>
         <tr><th>Apellido</th><td>${esc(datos.Apellido)}</td></tr>
         <tr><th>Cédula</th><td>${esc(datos.Cedula)}</td></tr>
         <tr><th>Correo</th><td>${esc(datos.Correo)}</td></tr>
         <tr><th>Punto de atención</th><td>${esc(datos.Nombre_Sucursal)}</td></tr>
+        ${filaCita}
         <tr><th>Estado</th><td><span class="estado estado-${esc(datos.Estado)}">${esc(datos.Estado)}</span></td></tr>
         <tr><th>Código de solicitud</th><td class="codigo">${esc(datos.Codigo_Barras)}</td></tr>
       `;
-    }).catch(() => mostrarAlerta(document.getElementById('error'), 'error', 'No se pudo obtener la información de tu solicitud.'));
+    }
+
+    async function cargarSolicitud() {
+      const { ok, status, datos } = await pedirJSON('/solicitud-usuario');
+      if (status === 401) return (window.location.href = '/Project/InicioSesion.html');
+      if (!ok) throw new Error('Error consultando la solicitud');
+
+      if (!datos.existe) {
+        el('noSolicitud').hidden = false;
+        return;
+      }
+      mostrarSolicitud(datos);
+    }
+
+    function abrirCambio(abrir) {
+      el('panelCambio').hidden = !abrir;
+      el('info').hidden = abrir;
+      el('alertaCambio').className = '';
+      el('alertaCambio').textContent = '';
+      if (abrir) {
+        if (!cita) cita = crearSelectorCita(el('selectorCita'), { onContinuar: guardarCita, textoContinuar: 'Guardar nueva cita' });
+        cita.cargar(sucursal);
+      }
+    }
+
+    el('btnImprimir').addEventListener('click', () => window.print());
+    el('btnCambiar').addEventListener('click', () => abrirCambio(true));
+    el('btnCerrarCambio').addEventListener('click', () => abrirCambio(false));
+
+    // Botón fijo de la barra inferior del selector
+    async function guardarCita() {
+      const elegida = cita.valor();
+      if (!elegida) return mostrarAlerta(el('alertaCambio'), 'error', 'Elige el día y la hora de tu cita.');
+      const { ok, datos } = await enviarJSON('/reprogramar-cita', elegida);
+      if (!ok) {
+        mostrarAlerta(el('alertaCambio'), 'error', datos.mensaje || 'No se pudo cambiar la cita.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return cita.recargar();
+      }
+      abrirCambio(false);
+      await cargarSolicitud();
+      mostrarAlerta(alertaAcciones, 'exito', datos.mensaje);
+    }
+
+    el('btnCancelar').addEventListener('click', async () => {
+      if (!confirm('¿Seguro que quieres cancelar tu solicitud? Se libera tu cupo y tendrás que pedir una nueva.')) return;
+      const { ok, datos } = await enviarJSON('/cancelar-solicitud', {});
+      await cargarSolicitud();
+      mostrarAlerta(alertaAcciones, ok ? 'exito' : 'error', datos.mensaje || 'No se pudo cancelar la solicitud.');
+    });
+
+    crearAvisoLlamada(el('avisoLlamada'));
+    cargarSolicitud().catch(() => mostrarAlerta(el('error'), 'error', 'No se pudo obtener la información de tu solicitud.'));
   </script>
 </body>
 

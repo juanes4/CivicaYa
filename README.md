@@ -7,9 +7,18 @@ Las personas registran sus datos con anticipación desde la web, eligen la sucur
 ## Cómo funciona
 
 1. La persona crea una cuenta con su correo y contraseña.
-2. Diligencia el formulario (nombre, cédula, fecha de nacimiento, teléfono, dirección) y elige la sucursal.
-3. El sistema genera la solicitud con un código y estado `PENDIENTE`.
+2. Diligencia el formulario (nombre, cédula, fecha de nacimiento, teléfono, dirección), elige el PAC y **reserva día y hora** (turnos de 15 minutos).
+3. El sistema genera la solicitud con un código, un código de cita (`CV-4821`) y estado `PENDIENTE`.
 4. Un administrador la pasa a `CONFIRMADO` cuando la tarjeta está lista y a `ENTREGADO` cuando la persona la reclama (siempre en ese orden).
+
+## Horarios de atención
+
+Todo se ajusta en [horarios.js](horarios.js) (`CONFIG`): días de atención, cupos web por hora, sobreagendamiento (10 %), anticipación mínima (2 h) y máxima (15 días), y los cupos presenciales/asistidos que solo se muestran como información. Las franjas se generan desde esa configuración; en la base solo se guardan las citas (`Fecha_Cita`, `Hora_Cita`, `Codigo_Cita` en `Solicitudes`).
+
+- Una sola solicitud en curso por persona; el cupo se comprueba y se toma en una sola sentencia SQL (nunca se sobrepasa).
+- Desde «Mi solicitud» se puede cambiar el día/hora (mismo PAC) o cancelar la solicitud (`CANCELADA`, libera el cupo).
+- «¿Prefiere que lo llamemos?» guarda nombre y celular (tabla `Llamadas`); el administrador los ve en su panel.
+- Al iniciar, el servidor actualiza bases antiguas (agrega las columnas y tablas nuevas).
 
 ## Puntos de atención (PAC)
 
@@ -26,7 +35,6 @@ Para mostrar la foto de un PAC, guarda el archivo en `Project/img/pac/` con el n
 
 ### Pendiente
 
-- Asignación de **horarios de atención** para repartir la demanda (núcleo de la idea; aún no implementado).
 - Notificaciones por correo (nodemailer ya está como dependencia, sin uso todavía).
 
 ## Tecnologías
@@ -62,6 +70,7 @@ Abre <http://localhost:3000>.
 ```
 server.js          Servidor Express y rutas
 puntos.js          Lista de puntos de atención (PAC)
+horarios.js        Configuración y reglas de cupos y franjas
 schema.sql         Esquema de la base de datos
 scripts/init-db.js Inicializa la base, los PAC y el admin
 Project/           Páginas HTML, css/, js/ e img/ (solo esta carpeta se sirve al navegador)

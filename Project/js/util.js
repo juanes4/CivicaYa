@@ -11,6 +11,7 @@ function esc(valor) {
 function mostrarAlerta(elemento, tipo, mensaje) {
   elemento.className = `alerta ${tipo}`;
   elemento.textContent = mensaje;
+  elemento.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); // por si el formulario es largo
 }
 
 // Pide JSON al servidor y devuelve { ok, status, datos }
@@ -45,4 +46,15 @@ async function cargarPuntos(select) {
     select.appendChild(opcion);
   });
   return true;
+}
+
+// 'AAAA-MM-DD' → 'lunes 21 de septiembre' (se usa el mediodía para evitar saltos por zona horaria)
+function formatearFecha(fecha) {
+  return new Date(`${fecha}T12:00:00`).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+// 'HH:MM' (24 h) → '8:00 a. m.'
+function formatearHora(hora) {
+  const [h, m] = hora.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'a. m.' : 'p. m.'}`;
 }
