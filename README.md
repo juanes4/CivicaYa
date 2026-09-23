@@ -17,7 +17,6 @@ Todo se ajusta en [horarios.js](horarios.js) (`CONFIG`): días de atención, cup
 
 - Una sola solicitud en curso por persona; el cupo se comprueba y se toma en una sola sentencia SQL (nunca se sobrepasa).
 - Desde «Mi solicitud» se puede cambiar el día/hora (mismo PAC) o cancelar la solicitud (`CANCELADA`, libera el cupo).
-- «¿Prefiere que lo llamemos?» guarda nombre y celular (tabla `Llamadas`); el administrador los ve en su panel.
 - Al iniciar, el servidor actualiza bases antiguas (agrega las columnas y tablas nuevas).
 
 ## Puntos de atención (PAC)

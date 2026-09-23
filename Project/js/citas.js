@@ -1,4 +1,4 @@
-// Selector de cita en dos pasos (día y hora) y aviso "¿Prefiere que lo llamemos?".
+// Selector de cita en dos pasos: día y hora.
 // Requiere util.js. Los cupos los calcula el servidor (horarios.js): aquí solo se muestran.
 
 const DIAS_POR_PAGINA = 5;
@@ -208,38 +208,4 @@ function crearSelectorCita(contenedor, { onContinuar, textoContinuar = 'Continua
     recargar: cargarHorarios,
     valor: () => (seleccion.fecha && seleccion.hora ? { ...seleccion } : null)
   };
-}
-
-// "¿Prefiere que lo llamemos? Deje su número": guarda nombre y celular para que un asesor llame
-function crearAvisoLlamada(contenedor) {
-  contenedor.innerHTML = `
-    <details class="llamada">
-      <summary>¿Prefiere que lo llamemos? Deje su número</summary>
-      <form novalidate>
-        <div id="llamadaAlerta" role="alert"></div>
-        <label for="llamadaNombre">Nombre</label>
-        <input type="text" id="llamadaNombre" maxlength="60" autocomplete="name">
-        <label for="llamadaCelular">Celular</label>
-        <input type="tel" id="llamadaCelular" inputmode="numeric" maxlength="12" autocomplete="tel">
-        <button type="submit" class="btn btn-bloque">Que me llamen</button>
-      </form>
-    </details>`;
-
-  const form = contenedor.querySelector('form');
-  const alerta = contenedor.querySelector('#llamadaAlerta');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const nombre = form.querySelector('#llamadaNombre').value.trim();
-    const celular = form.querySelector('#llamadaCelular').value.trim();
-    if (!nombre || !/^\d{7,12}$/.test(celular)) {
-      return mostrarAlerta(alerta, 'error', 'Escribe tu nombre y un celular de 7 a 12 dígitos.');
-    }
-    try {
-      const { ok, datos } = await enviarJSON('/solicitar-llamada', { nombre, celular });
-      mostrarAlerta(alerta, ok ? 'exito' : 'error', datos.mensaje || (ok ? 'Listo.' : 'No se pudo guardar.'));
-      if (ok) form.reset();
-    } catch {
-      mostrarAlerta(alerta, 'error', 'No se pudo conectar con el servidor.');
-    }
-  });
 }

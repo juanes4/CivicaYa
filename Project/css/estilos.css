@@ -3,7 +3,7 @@
 :root {
   --verde: #7ab51d;
   --verde-oscuro: #4f8a12;
-  --verde-barra: #5d9c16;
+  --verde-barra: #7ac31f;   /* mismo verde de la barra superior de la página principal */
   --verde-claro: #eef5e2;
   --gris: #444;
   --texto: #222;
@@ -14,6 +14,21 @@
   --exito: #2f7a26;
   --exito-fondo: #e8f5e4;
   --morado: #6a1b9a;
+
+  --primario: var(--verde-oscuro);
+  --primario-hover: #3f7009;
+  --primario-claro: var(--verde-claro);
+  --barra: var(--verde-barra);
+  --acento: #fff;
+  --exito-borde: #b7dcae;
+  --solo-lectura: #eef0ea;
+
+  /* Selector de cita: gris, morado y amarillo de Cívica en vez del verde, para leerlo mejor */
+  --agenda-borde: #444;
+  --agenda-texto: #222;
+  --agenda-hover: #fff6c7;
+  --agenda-elegido: #6a1b9a;
+  --agenda-anillo: #f2d31b;
 }
 
 * {
@@ -30,9 +45,11 @@ body {
 
 /* --- Encabezado --- */
 
+/* Delgada, igual a la barra verde superior de la página principal */
 .topbar {
-  background: var(--verde-barra);
-  padding: 10px 24px;
+  background: var(--barra);
+  min-height: 32px;
+  padding: 6px 24px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px 22px;
@@ -42,14 +59,18 @@ body {
 .topbar a {
   color: #fff;
   font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  text-transform: uppercase;
   text-decoration: none;
 }
 
 .topbar a:hover,
 .topbar a.activo {
   text-decoration: underline;
+}
+
+.topbar a.activo {
+  color: var(--acento);
 }
 
 .brandbar {
@@ -72,11 +93,11 @@ body {
 }
 
 .brand b {
-  color: var(--verde-oscuro);
+  color: var(--primario);
 }
 
 .brandbar .metro {
-  height: 56px;
+  height: 68px;
   width: auto;
 }
 
@@ -125,7 +146,8 @@ label {
   font-weight: 600;
 }
 
-label.requerido::after {
+label.requerido::after,
+legend.requerido::after {
   content: ' *';
   color: var(--error);
 }
@@ -143,13 +165,13 @@ select {
 
 input:focus,
 select:focus {
-  outline: 2px solid var(--verde);
+  outline: 2px solid var(--primario);
   outline-offset: 0;
-  border-color: var(--verde);
+  border-color: var(--primario);
 }
 
 input[readonly] {
-  background: #eef0ea;
+  background: var(--solo-lectura);
   color: #555;
 }
 
@@ -159,7 +181,7 @@ input[readonly] {
   gap: 0 16px;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 560px) {
   .fila {
     grid-template-columns: 1fr;
   }
@@ -180,7 +202,7 @@ input[readonly] {
   padding: 11px 22px;
   border: 2px solid transparent;
   border-radius: 6px;
-  background: var(--verde-oscuro);
+  background: var(--primario);
   color: #fff;
   font: inherit;
   font-weight: 700;
@@ -190,7 +212,7 @@ input[readonly] {
 }
 
 .btn:hover {
-  background: #3f7009;
+  background: var(--primario-hover);
 }
 
 .btn:disabled {
@@ -205,12 +227,12 @@ input[readonly] {
 
 .btn-secundario {
   background: #fff;
-  color: var(--verde-oscuro);
-  border-color: var(--verde-oscuro);
+  color: var(--primario);
+  border-color: var(--primario);
 }
 
 .btn-secundario:hover {
-  background: var(--verde-claro);
+  background: var(--primario-claro);
 }
 
 .alerta {
@@ -234,7 +256,7 @@ input[readonly] {
 .alerta.exito {
   background: var(--exito-fondo);
   color: var(--exito);
-  border: 1px solid #b7dcae;
+  border: 1px solid var(--exito-borde);
 }
 
 .enlaces {
@@ -269,7 +291,7 @@ td {
 }
 
 th {
-  background: var(--verde-claro);
+  background: var(--primario-claro);
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -375,10 +397,10 @@ tbody tr:last-child td {
   justify-content: center;
   min-height: 56px;
   padding: 8px 14px;
-  border: 3px solid var(--verde-oscuro);
+  border: 3px solid var(--agenda-borde);
   border-radius: 10px;
   background: #fff;
-  color: var(--verde-oscuro);
+  color: var(--agenda-texto);
   font-size: 1.125rem;
   line-height: 1.25;
   cursor: pointer;
@@ -386,16 +408,16 @@ tbody tr:last-child td {
 
 .tarjeta-dia span:hover,
 .hora span:hover {
-  background: var(--verde-claro);
+  background: var(--agenda-hover);
 }
 
-/* Seleccionado: relleno verde y borde morado */
+/* Seleccionado: relleno morado con anillo amarillo */
 .tarjeta-dia input:checked + span,
 .hora input:checked + span {
-  border-color: var(--morado);
-  background: var(--verde-oscuro);
+  border-color: var(--agenda-anillo);
+  background: var(--agenda-elegido);
   color: #fff;
-  box-shadow: 0 0 0 2px var(--morado);
+  box-shadow: 0 0 0 2px var(--agenda-elegido);
 }
 
 .tarjeta-dia input:focus-visible + span,
@@ -414,7 +436,7 @@ tbody tr:last-child td {
 }
 
 .marca {
-  color: var(--verde-oscuro);
+  color: var(--agenda-elegido);
 }
 
 .tarjeta-dia input:checked + span em,
@@ -441,7 +463,7 @@ tbody tr:last-child td {
   line-height: 1.15;
 }
 
-/* Sobre el fondo verde de la hora elegida, la etiqueta se lee en blanco */
+/* Sobre el fondo de la hora elegida, la etiqueta se lee en blanco */
 .hora input:checked + span .nota {
   color: #fff;
 }
@@ -508,7 +530,7 @@ tbody tr:last-child td {
   justify-content: center;
   gap: 8px 16px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  border-top: 3px solid var(--verde-oscuro);
+  border-top: 3px solid var(--primario);
   background: #fff;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
 }
@@ -548,21 +570,180 @@ tbody tr:last-child td {
   flex: none;
 }
 
-/* Aviso "¿Prefiere que lo llamemos?" */
-.llamada {
-  max-width: 640px;
-  margin: 18px auto 0;
-  padding: 14px 20px;
-  border: 2px dashed var(--verde-oscuro);
-  border-radius: 10px;
-  background: #fff;
+/* Preguntas de sí/no o de una sola opción (primera vez, motivo, forma de pago) */
+.grupo-opciones {
+  margin: 14px 0 6px;
+  padding: 0;
+  border: 0;
 }
 
-.llamada summary {
+.grupo-opciones legend {
+  padding: 0;
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-weight: 400;
   cursor: pointer;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--verde-oscuro);
+}
+
+.opcion input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex: none;
+}
+
+/* --- Adaptación a distintos tamaños de pantalla --- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+th,
+td {
+  overflow-wrap: anywhere;
+}
+
+/* Los hijos de la cuadrícula pueden encogerse (evita que el campo de fecha ensanche la tarjeta) */
+.fila > * {
+  min-width: 0;
+}
+
+input[type="date"] {
+  min-width: 0;
+}
+
+.topbar a {
+  padding: 4px 0;
+}
+
+/* Tabletas y pantallas grandes */
+@media (min-width: 768px) {
+  main {
+    padding: 40px 24px 56px;
+  }
+
+  .horas {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tabletas pequeñas y celulares */
+@media (max-width: 767px) {
+  .topbar {
+    padding: 6px 16px;
+    gap: 2px 18px;
+  }
+
+  .brandbar {
+    padding: 8px 16px;
+  }
+
+  .brandbar .metro {
+    height: 52px;
+  }
+
+  /* 16 px evita que iOS haga zoom al tocar un campo */
+  input,
+  select {
+    font-size: 1rem;
+  }
+
+  .topbar a {
+    padding: 4px 0;
+  }
+}
+
+@media (max-width: 560px) {
+  main {
+    padding: 20px 12px 36px;
+  }
+
+  .card {
+    border-radius: 8px;
+  }
+
+  .card h2 {
+    font-size: 1.3rem;
+  }
+
+  .paso {
+    font-size: 1.15rem;
+  }
+
+  .barra-cita {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .barra-cita .resumen,
+  .barra-cita .btn {
+    flex-basis: 100%;
+    max-width: none;
+    font-size: 1rem;
+  }
+
+  .acciones .btn {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar {
+    padding-inline: 12px;
+    column-gap: 14px;
+  }
+
+  .topbar a {
+    font-size: 10px;
+  }
+
+  .brandbar {
+    padding-inline: 12px;
+  }
+
+  .brand {
+    gap: 8px;
+    font-size: 1.1rem;
+  }
+
+  .brandbar .metro {
+    height: 40px;
+  }
+
+  .card {
+    padding: 16px 12px;
+  }
+
+  .horas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Con solo 2 columnas, la hora y "a. m." van en la misma línea */
+  .hora span {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    column-gap: 6px;
+  }
+
+  .hora .nota {
+    flex-basis: 100%;
+    font-size: 0.95rem;
+  }
 }
 
 /* Comprobante de la cita al imprimir */
@@ -584,7 +765,7 @@ tbody tr:last-child td {
 }
 
 /* Tablas del administrador en pantallas pequeñas: cada fila se vuelve una tarjeta */
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   table.apilable,
   table.apilable tbody,
   table.apilable tr,

@@ -21,6 +21,13 @@
       font-size: 1.5rem;
     }
 
+    .acciones-panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 20px;
+    }
+
     .filtro {
       display: flex;
       align-items: center;
@@ -82,11 +89,14 @@
   <main>
     <div class="encabezado-panel">
       <h1>Solicitudes en curso</h1>
-      <div class="filtro">
-        <label for="filtroSucursal">Filtrar por PAC:</label>
-        <select id="filtroSucursal">
-          <option value="">Todos</option>
-        </select>
+      <div class="acciones-panel">
+        <a class="btn btn-secundario" href="/Project/Eliminados.html">Ver Cívicas entregadas</a>
+        <div class="filtro">
+          <label for="filtroSucursal">Filtrar por PAC:</label>
+          <select id="filtroSucursal">
+            <option value="">Todos</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -101,6 +111,8 @@
             <th>Cédula</th>
             <th>Punto de atención</th>
             <th>Cita</th>
+            <th>Solicitud</th>
+            <th>Tarifa</th>
             <th>Estado</th>
             <th>Acción</th>
           </tr>
@@ -109,20 +121,6 @@
       </table>
     </div>
 
-    <h2 class="subtitulo">Personas que piden que las llamemos</h2>
-    <div class="tabla-scroll">
-      <table class="apilable">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Celular</th>
-            <th>Registrada (UTC)</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody id="tablaLlamadas"></tbody>
-      </table>
-    </div>
   </main>
 
   <script src="/Project/js/util.js"></script>
@@ -137,6 +135,17 @@
       CONFIRMADO: { estado: 'ENTREGADO', texto: 'Confirmar entrega', clase: 'btn-entregar' }
     };
 
+    const MOTIVOS = { ROBO: 'Robo', PERDIDA: 'Pérdida', DANO: 'Daño' };
+    const METODOS_PAGO = { PSE: 'PSE', EFECTIVO: 'Efectivo' };
+    const TARIFAS = { ADULTO_MAYOR: 'Adulto mayor', DISCAPACIDAD: 'Discapacidad' };
+
+    function describirSolicitud(s) {
+      if (s.Primera_Vez !== 'NO') return 'Primera vez';
+      const motivo = MOTIVOS[s.Motivo_Solicitud] || s.Motivo_Solicitud || '—';
+      const pago = METODOS_PAGO[s.Metodo_Pago] || s.Metodo_Pago || '—';
+      return `Reposición: ${motivo} · paga por ${pago}`;
+    }
+
     async function cargarSolicitudes() {
       let url = '/solicitudes-todas';
       if (filtro.value) url += '?sucursal=' + encodeURIComponent(filtro.value);
@@ -150,7 +159,7 @@
       alerta.textContent = '';
 
       if (datos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="vacio">No hay solicitudes en curso.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="vacio">No hay solicitudes en curso.</td></tr>';
         return;
       }
       tbody.innerHTML = datos.map((s) => {
@@ -165,6 +174,8 @@
             <td data-label="Cédula">${esc(s.Cedula)}</td>
             <td data-label="Punto de atención">${esc(s.Nombre_Sucursal)}</td>
             <td data-label="Cita">${s.Fecha_Cita ? esc(formatearFecha(s.Fecha_Cita) + ', ' + formatearHora(s.Hora_Cita)) : 'Sin cita'}</td>
+            <td data-label="Solicitud">${esc(describirSolicitud(s))}</td>
+            <td data-label="Tarifa">${esc(TARIFAS[s.Tipo_Tarifa] || 'Estándar')}</td>
             <td data-label="Estado"><span class="estado estado-${esc(s.Estado)}">${esc(s.Estado)}</span></td>
             <td data-label="Acción">${boton}</td>
           </tr>`;
@@ -193,33 +204,6 @@
     });
 
     filtro.addEventListener('change', cargarSolicitudes);
-
-    // Personas que dejaron su número para que las llamemos
-    const tbodyLlamadas = document.getElementById('tablaLlamadas');
-
-    async function cargarLlamadas() {
-      const { ok, datos } = await pedirJSON('/llamadas');
-      if (!ok || !Array.isArray(datos)) return;
-      tbodyLlamadas.innerHTML = datos.length === 0
-        ? '<tr><td colspan="4" class="vacio">No hay llamadas pendientes.</td></tr>'
-        : datos.map((l) => `
-          <tr>
-            <td data-label="Nombre">${esc(l.Nombre)}</td>
-            <td data-label="Celular">${esc(l.Celular)}</td>
-            <td data-label="Registrada (UTC)">${esc(l.Creada)}</td>
-            <td data-label="Acción"><button class="btn btn-accion" data-llamada="${esc(l.id_Llamada)}">Ya la llamé</button></td>
-          </tr>`).join('');
-    }
-
-    tbodyLlamadas.addEventListener('click', async (e) => {
-      const boton = e.target.closest('button[data-llamada]');
-      if (!boton) return;
-      boton.disabled = true;
-      await enviarJSON('/llamada-atendida', { id: boton.dataset.llamada });
-      cargarLlamadas();
-    });
-
-    cargarLlamadas();
 
     cargarPuntos(filtro).then(cargarSolicitudes);
   </script>

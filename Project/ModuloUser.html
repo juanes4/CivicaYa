@@ -68,6 +68,36 @@
         <option value="">Selecciona un punto de atención</option>
       </select>
 
+      <fieldset class="grupo-opciones">
+        <legend class="requerido">¿Es la primera vez que solicitas la Tarjeta Cívica?</legend>
+        <label class="opcion"><input type="radio" name="primera_vez" value="SI" required> Sí, es mi primera tarjeta</label>
+        <label class="opcion"><input type="radio" name="primera_vez" value="NO" required> No, ya la he tenido antes</label>
+      </fieldset>
+
+      <div id="bloqueReposicion" hidden>
+        <label class="requerido" for="motivo_solicitud">Motivo de la solicitud</label>
+        <select id="motivo_solicitud" name="motivo_solicitud">
+          <option value="">Selecciona un motivo</option>
+          <option value="ROBO">Robo</option>
+          <option value="PERDIDA">Pérdida</option>
+          <option value="DANO">Daño</option>
+        </select>
+
+        <fieldset class="grupo-opciones">
+          <legend class="requerido">¿Cómo vas a pagar la reposición?</legend>
+          <label class="opcion"><input type="radio" name="metodo_pago" value="PSE"> PSE, en línea</label>
+          <label class="opcion"><input type="radio" name="metodo_pago" value="EFECTIVO"> Efectivo, al llegar al punto de atención</label>
+        </fieldset>
+      </div>
+
+      <label for="tipo_tarifa">Tipo de tarifa</label>
+      <select id="tipo_tarifa" name="tipo_tarifa">
+        <option value="ESTANDAR">Estándar</option>
+        <option value="ADULTO_MAYOR">Adulto mayor</option>
+        <option value="DISCAPACIDAD">Persona con discapacidad</option>
+      </select>
+      <p class="ayuda">Si eliges una tarifa especial, presenta el soporte correspondiente el día de tu cita.</p>
+
       <div id="selectorCita"></div>
 
       <!-- TODO producción: enlazar la política de tratamiento de datos completa -->
@@ -79,7 +109,6 @@
       <button type="submit" class="btn btn-bloque">Registrar solicitud y reservar cita</button>
     </form>
 
-    <div id="avisoLlamada"></div>
   </main>
 
   <script src="/Project/js/util.js"></script>
@@ -88,6 +117,17 @@
     const form = document.getElementById('formSolicitud');
     const alerta = document.getElementById('alerta');
     const boton = form.querySelector('button[type="submit"]');
+
+    const EDAD_MINIMA_ADULTO_MAYOR = 60;
+    // Edad cumplida hoy a partir de 'AAAA-MM-DD'
+    function calcularEdad(fechaNacimiento) {
+      const hoy = new Date();
+      const [anio, mes, dia] = fechaNacimiento.split('-').map(Number);
+      let edad = hoy.getFullYear() - anio;
+      const noHaCumplidoEsteAnio = hoy.getMonth() + 1 < mes || (hoy.getMonth() + 1 === mes && hoy.getDate() < dia);
+      if (noHaCumplidoEsteAnio) edad--;
+      return edad;
+    }
     // «Continuar» lleva a la autorización de datos, el último paso antes de enviar
     const cita = crearSelectorCita(document.getElementById('selectorCita'), {
       onContinuar: () => {
@@ -95,9 +135,19 @@
         form.acepta_datos.focus({ preventScroll: true });
       }
     });
-    crearAvisoLlamada(document.getElementById('avisoLlamada'));
 
     form.sucursal.addEventListener('change', () => cita.cargar(form.sucursal.value));
+
+    // El motivo y la forma de pago solo aplican si no es la primera tarjeta
+    const bloqueReposicion = document.getElementById('bloqueReposicion');
+    form.primera_vez.forEach((radio) => radio.addEventListener('change', () => {
+      const esReposicion = form.primera_vez.value === 'NO';
+      bloqueReposicion.hidden = !esReposicion;
+      if (!esReposicion) {
+        form.motivo_solicitud.value = '';
+        form.metodo_pago.forEach((r) => { r.checked = false; });
+      }
+    }));
 
     // Si ya tiene una solicitud en curso, se le muestra su estado en lugar del formulario
     Promise.all([
@@ -123,11 +173,21 @@
         fecha_nacimiento: form.fecha_nacimiento.value,
         telefono: form.telefono.value.trim(),
         direccion: form.direccion.value.trim(),
-        sucursal: form.sucursal.value
+        sucursal: form.sucursal.value,
+        primera_vez: form.primera_vez.value || '',
+        motivo_solicitud: form.motivo_solicitud.value,
+        metodo_pago: form.metodo_pago.value || '',
+        tipo_tarifa: form.tipo_tarifa.value
       };
 
       if (!datos.nombre || !datos.apellido || !datos.cedula || !datos.fecha_nacimiento || !datos.telefono || !datos.sucursal) {
         return mostrarAlerta(alerta, 'error', 'Por favor, completa todos los campos obligatorios.');
+      }
+      if (!datos.primera_vez) {
+        return mostrarAlerta(alerta, 'error', 'Indica si es la primera vez que solicitas la Tarjeta Cívica.');
+      }
+      if (datos.primera_vez === 'NO' && (!datos.motivo_solicitud || !datos.metodo_pago)) {
+        return mostrarAlerta(alerta, 'error', 'Indica el motivo de tu solicitud y cómo vas a pagar la reposición.');
       }
       const elegida = cita.valor();
       if (!elegida) return mostrarAlerta(alerta, 'error', 'Elige el día y la hora de tu cita.');
@@ -145,6 +205,9 @@
       }
       if (datos.fecha_nacimiento > new Date().toISOString().slice(0, 10)) {
         return mostrarAlerta(alerta, 'error', 'La fecha de nacimiento no puede ser futura.');
+      }
+      if (datos.tipo_tarifa === 'ADULTO_MAYOR' && calcularEdad(datos.fecha_nacimiento) < EDAD_MINIMA_ADULTO_MAYOR) {
+        return mostrarAlerta(alerta, 'error', `La tarifa de adulto mayor solo aplica desde los ${EDAD_MINIMA_ADULTO_MAYOR} años.`);
       }
 
       boton.disabled = true;

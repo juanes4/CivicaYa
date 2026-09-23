@@ -696,6 +696,111 @@
       }
     }
 
+    /* Tabletas: se recorta el relleno de las diapositivas para que el texto respire */
+    @media (min-width: 768px) and (max-width: 1000px) {
+      .slide {
+        gap: 28px;
+        padding: 0 72px;
+      }
+
+      .slide h2 {
+        font-size: 36px;
+      }
+
+      .slide-2 h2 {
+        font-size: 32px;
+      }
+
+      .slide-2 img {
+        height: 260px;
+      }
+
+      .cabecera-fila {
+        gap: 24px;
+      }
+
+      .menu {
+        gap: 24px;
+      }
+    }
+
+    /* Celulares pequeños (320 px) */
+    @media (max-width: 400px) {
+      .barra-superior nav {
+        gap: 10px;
+      }
+
+      .barra-superior nav a,
+      .cuenta {
+        font-size: 10px;
+      }
+
+      .cuenta {
+        padding: 0 12px;
+      }
+
+      .cuenta svg {
+        display: none;
+      }
+
+      .logo {
+        font-size: 30px;
+      }
+
+      .franja {
+        font-size: 14px;
+      }
+
+      .carrusel {
+        height: 470px;
+      }
+
+      .slide {
+        padding: 0 36px 40px;
+      }
+
+      .slide h2 {
+        font-size: 24px;
+      }
+
+      .slide .subtitulo {
+        font-size: 18px;
+      }
+
+      .slide-2 h2 {
+        font-size: 21px;
+      }
+
+      .slide-2 img {
+        height: 90px;
+      }
+
+      .boton-amarillo {
+        padding: 8px 10px 8px 18px;
+        font-size: 16px;
+      }
+
+      .civicaya {
+        padding: 32px 16px;
+      }
+
+      .civicaya h2 {
+        font-size: 23px;
+      }
+
+      .civicaya p {
+        font-size: 16px;
+      }
+
+      .pasos {
+        grid-template-columns: 1fr;
+      }
+
+      .puntos {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       html {
         scroll-behavior: auto;

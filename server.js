@@ -62,7 +62,10 @@ const all = (sql, params = []) => new Promise((resolve, reject) => {
 
 // Pone al día una base creada antes de los horarios: crea las tablas que falten (schema.sql)
 // y agrega a Solicitudes las columnas de la cita.
-const COLUMNAS_CITA = ['Fecha_Cita', 'Hora_Cita', 'Codigo_Cita'];
+const COLUMNAS_CITA = [
+    'Fecha_Cita', 'Hora_Cita', 'Codigo_Cita',
+    'Primera_Vez', 'Motivo_Solicitud', 'Metodo_Pago', 'Tipo_Tarifa'
+];
 
 async function migrar() {
     const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
@@ -343,48 +346,24 @@ app.post('/cancelar-solicitud', requiereSesion, async (req, res) => {
     }
 });
 
-// "¿Prefiere que lo llamemos?": guarda el nombre y el celular para que un asesor llame
-// TODO producción: limitar peticiones (rate limit) y avisar al equipo de atención.
-app.post('/solicitar-llamada', requiereSesion, async (req, res) => {
-    const nombre = texto(req.body.nombre);
-    const celular = texto(req.body.celular);
-    if (!nombre || nombre.length > 60) return res.status(400).json({ mensaje: 'Escribe tu nombre.' });
-    if (!/^\d{7,12}$/.test(celular)) return res.status(400).json({ mensaje: 'El celular debe tener entre 7 y 12 dígitos numéricos.' });
-    try {
-        await run('INSERT INTO Llamadas (Nombre, Celular) VALUES (?, ?)', [nombre, celular]);
-        res.json({ mensaje: 'Listo. Un asesor te llamará.' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ mensaje: 'Error al guardar tu solicitud.' });
-    }
-});
-
-app.get('/llamadas', soloAdmin, async (req, res) => {
-    try {
-        res.json(await all('SELECT id_Llamada, Nombre, Celular, Creada FROM Llamadas ORDER BY id_Llamada'));
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ mensaje: 'Error al consultar las llamadas.' });
-    }
-});
-
-app.post('/llamada-atendida', soloAdmin, async (req, res) => {
-    try {
-        const resultado = await run('DELETE FROM Llamadas WHERE id_Llamada = ?', [Number(req.body.id)]);
-        if (!resultado.changes) return res.status(404).json({ mensaje: 'La llamada ya no existe.' });
-        res.json({ mensaje: 'Llamada marcada como atendida.' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ mensaje: 'Error al actualizar la llamada.' });
-    }
-});
-
 // --- Solicitudes ---
 
 function fechaNacimientoValida(fecha) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
     const d = new Date(`${fecha}T00:00:00Z`);
     return !isNaN(d) && d.toISOString().slice(0, 10) === fecha && d <= new Date() && d.getUTCFullYear() >= 1900;
+}
+
+const EDAD_MINIMA_ADULTO_MAYOR = 60;
+
+// Edad cumplida hoy a partir de 'AAAA-MM-DD' (asume fechaNacimientoValida ya comprobada)
+function edadCumplida(fechaNacimiento) {
+    const hoy = new Date();
+    const [anio, mes, dia] = fechaNacimiento.split('-').map(Number);
+    let edad = hoy.getUTCFullYear() - anio;
+    const noHaCumplidoEsteAnio = hoy.getUTCMonth() + 1 < mes || (hoy.getUTCMonth() + 1 === mes && hoy.getUTCDate() < dia);
+    if (noHaCumplidoEsteAnio) edad--;
+    return edad;
 }
 
 app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
@@ -398,6 +377,10 @@ app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
     const sucursal = texto(req.body.sucursal);
     const fechaCita = texto(req.body.fecha);
     const horaCita = texto(req.body.hora);
+    const primeraVez = texto(req.body.primera_vez).toUpperCase();
+    const motivoSolicitud = texto(req.body.motivo_solicitud).toUpperCase();
+    const metodoPago = texto(req.body.metodo_pago).toUpperCase();
+    const tipoTarifa = texto(req.body.tipo_tarifa).toUpperCase() || 'ESTANDAR';
 
     if (!nombre || !apellido || !cedula || !fechaNacimiento || !telefono || !sucursal) {
         return res.status(400).json({ mensaje: 'Completa todos los campos obligatorios.' });
@@ -412,6 +395,25 @@ app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
     if (!/^\d{6,10}$/.test(cedula)) return res.status(400).json({ mensaje: 'La cédula debe tener entre 6 y 10 dígitos numéricos.' });
     if (!/^\d{7,12}$/.test(telefono)) return res.status(400).json({ mensaje: 'El teléfono debe tener entre 7 y 12 dígitos numéricos.' });
     if (!fechaNacimientoValida(fechaNacimiento)) return res.status(400).json({ mensaje: 'La fecha de nacimiento no es válida.' });
+
+    // "¿Es primera vez?" y, si no, motivo y forma de pago de la reposición
+    if (!['SI', 'NO'].includes(primeraVez)) {
+        return res.status(400).json({ mensaje: 'Indica si es la primera vez que solicitas la Tarjeta Cívica.' });
+    }
+    if (primeraVez === 'NO') {
+        if (!['ROBO', 'PERDIDA', 'DANO'].includes(motivoSolicitud)) {
+            return res.status(400).json({ mensaje: 'Selecciona el motivo de tu solicitud.' });
+        }
+        if (!['PSE', 'EFECTIVO'].includes(metodoPago)) {
+            return res.status(400).json({ mensaje: 'Selecciona cómo vas a pagar la reposición.' });
+        }
+    }
+    if (!['ESTANDAR', 'ADULTO_MAYOR', 'DISCAPACIDAD'].includes(tipoTarifa)) {
+        return res.status(400).json({ mensaje: 'Selecciona un tipo de tarifa válido.' });
+    }
+    if (tipoTarifa === 'ADULTO_MAYOR' && edadCumplida(fechaNacimiento) < EDAD_MINIMA_ADULTO_MAYOR) {
+        return res.status(400).json({ mensaje: `La tarifa de adulto mayor solo aplica desde los ${EDAD_MINIMA_ADULTO_MAYOR} años.` });
+    }
 
     try {
         const punto = await get('SELECT id_Sucursal FROM Sucursales WHERE Nombre_Sucursal = ?', [sucursal]);
@@ -443,21 +445,41 @@ app.post('/registrar-solicitud', requiereSesion, async (req, res) => {
             });
         }
 
+        // Una sola solicitud activa por persona: Id_Usuario está atado 1 a 1 a la cédula
+        // (Usuarios.Cedula es UNIQUE y el bloque de arriba ya rechazó cualquier cédula que
+        // no coincida con la cuenta), así que esta regla queda basada en el documento, no en el correo.
         const enCurso = await get(
             "SELECT 1 FROM Solicitudes WHERE Id_Usuario = ? AND Estado NOT IN ('ENTREGADO', 'CANCELADA')",
             [idUsuario]
         );
         if (enCurso) return res.status(409).json({ mensaje: 'Ya existe una solicitud en curso para esta persona.' });
 
+        // No se puede declarar "primera vez" si el sistema ya registra una entrega anterior a esta cédula
+        if (primeraVez === 'SI') {
+            const yaRecibida = await get(
+                "SELECT 1 FROM Solicitudes WHERE Id_Usuario = ? AND Estado = 'ENTREGADO'",
+                [idUsuario]
+            );
+            if (yaRecibida) {
+                return res.status(409).json({
+                    mensaje: 'Nuestros registros indican que ya recibiste una Tarjeta Cívica antes. Marca "No" e indica el motivo de tu nueva solicitud.'
+                });
+            }
+        }
+
         const codigoBarras = `${cedula}${crypto.randomInt(1000000000, 10000000000)}`;
         const codigoCita = await generarCodigoCita();
         // El cupo se comprueba y se toma en una sola sentencia, así nunca se pasa de la capacidad
         const resultado = await run(
-            `INSERT INTO Solicitudes (Id_Usuario, id_Sucursal, Estado, Codigo_Barras, Fecha_Cita, Hora_Cita, Codigo_Cita)
-             SELECT ?, ?, 'PENDIENTE', ?, ?, ?, ?
+            `INSERT INTO Solicitudes (
+                Id_Usuario, id_Sucursal, Estado, Codigo_Barras, Fecha_Cita, Hora_Cita, Codigo_Cita,
+                Primera_Vez, Motivo_Solicitud, Metodo_Pago, Tipo_Tarifa
+             )
+             SELECT ?, ?, 'PENDIENTE', ?, ?, ?, ?, ?, ?, ?, ?
              WHERE (SELECT COUNT(*) FROM Solicitudes
                     WHERE id_Sucursal = ? AND Fecha_Cita = ? AND Hora_Cita = ? AND Estado != 'CANCELADA') < ?`,
             [idUsuario, punto.id_Sucursal, codigoBarras, fechaCita, horaCita, codigoCita,
+             primeraVez, primeraVez === 'NO' ? motivoSolicitud : null, primeraVez === 'NO' ? metodoPago : null, tipoTarifa,
              punto.id_Sucursal, fechaCita, horaCita, horarios.capacidad(horaCita)]
         );
         if (!resultado.changes) {
@@ -476,7 +498,8 @@ function listarSolicitudes(entregadas) {
     return async (req, res) => {
         const sucursal = req.query.sucursal;
         let sql = `
-            SELECT u.Nombre, u.Apellido, u.Cedula, s.Nombre_Sucursal, so.Estado, so.Fecha_Cita, so.Hora_Cita
+            SELECT u.Nombre, u.Apellido, u.Cedula, s.Nombre_Sucursal, so.Estado, so.Fecha_Cita, so.Hora_Cita,
+                   so.Primera_Vez, so.Motivo_Solicitud, so.Metodo_Pago, so.Tipo_Tarifa
             FROM Solicitudes so
             JOIN Usuarios u ON so.Id_Usuario = u.Id_Usuario
             JOIN Sucursales s ON so.id_Sucursal = s.id_Sucursal
@@ -547,7 +570,8 @@ app.get('/solicitud-usuario', requiereSesion, async (req, res) => {
     try {
         const fila = await get(
             `SELECT u.Nombre, u.Apellido, u.Cedula, u.Correo, s.Nombre_Sucursal, so.Estado, so.Codigo_Barras,
-                    so.Fecha_Cita, so.Hora_Cita, so.Codigo_Cita
+                    so.Fecha_Cita, so.Hora_Cita, so.Codigo_Cita,
+                    so.Primera_Vez, so.Motivo_Solicitud, so.Metodo_Pago, so.Tipo_Tarifa
              FROM Usuarios u
              JOIN Solicitudes so ON u.Id_Usuario = so.Id_Usuario
              JOIN Sucursales s ON so.id_Sucursal = s.id_Sucursal

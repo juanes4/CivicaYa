@@ -33,14 +33,10 @@ CREATE TABLE IF NOT EXISTS Solicitudes (
     Fecha_Cita TEXT,                     -- 'AAAA-MM-DD' (vacía en solicitudes anteriores a los horarios)
     Hora_Cita TEXT,                      -- 'HH:MM' (franjas definidas en horarios.js)
     Codigo_Cita TEXT,                    -- ej. 'CV-4821'
+    Primera_Vez TEXT,                    -- 'SI' | 'NO' (vacía en solicitudes anteriores a este campo)
+    Motivo_Solicitud TEXT,               -- 'ROBO' | 'PERDIDA' | 'DANO' (solo si Primera_Vez = 'NO')
+    Metodo_Pago TEXT,                    -- 'PSE' | 'EFECTIVO' (solo si Primera_Vez = 'NO')
+    Tipo_Tarifa TEXT,                    -- 'ESTANDAR' | 'ADULTO_MAYOR' | 'DISCAPACIDAD'
     FOREIGN KEY (Id_Usuario) REFERENCES Usuarios(Id_Usuario),
     FOREIGN KEY (id_Sucursal) REFERENCES Sucursales(id_Sucursal)
-);
-
--- Personas que piden que las llamemos en vez de sacar la cita por la web
-CREATE TABLE IF NOT EXISTS Llamadas (
-    id_Llamada INTEGER PRIMARY KEY AUTOINCREMENT,
-    Nombre TEXT NOT NULL,
-    Celular TEXT NOT NULL,
-    Creada TEXT NOT NULL DEFAULT (datetime('now'))   -- UTC
 );

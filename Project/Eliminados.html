@@ -21,6 +21,13 @@
       font-size: 1.5rem;
     }
 
+    .acciones-panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 20px;
+    }
+
     .filtro {
       display: flex;
       align-items: center;
@@ -64,11 +71,14 @@
   <main>
     <div class="encabezado-panel">
       <h1>Cívicas entregadas</h1>
-      <div class="filtro">
-        <label for="filtroSucursal">Filtrar por PAC:</label>
-        <select id="filtroSucursal">
-          <option value="">Todos</option>
-        </select>
+      <div class="acciones-panel">
+        <a class="btn btn-secundario" href="/Project/ModuloAdmin.html">Ver solicitudes en curso</a>
+        <div class="filtro">
+          <label for="filtroSucursal">Filtrar por PAC:</label>
+          <select id="filtroSucursal">
+            <option value="">Todos</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -82,6 +92,8 @@
             <th>Apellido</th>
             <th>Cédula</th>
             <th>Punto de atención</th>
+            <th>Solicitud</th>
+            <th>Tarifa</th>
             <th>Estado</th>
           </tr>
         </thead>
@@ -96,6 +108,17 @@
     const tbody = document.getElementById('tablaSolicitudes');
     const alerta = document.getElementById('alerta');
 
+    const MOTIVOS = { ROBO: 'Robo', PERDIDA: 'Pérdida', DANO: 'Daño' };
+    const METODOS_PAGO = { PSE: 'PSE', EFECTIVO: 'Efectivo' };
+    const TARIFAS = { ADULTO_MAYOR: 'Adulto mayor', DISCAPACIDAD: 'Discapacidad' };
+
+    function describirSolicitud(s) {
+      if (s.Primera_Vez !== 'NO') return 'Primera vez';
+      const motivo = MOTIVOS[s.Motivo_Solicitud] || s.Motivo_Solicitud || '—';
+      const pago = METODOS_PAGO[s.Metodo_Pago] || s.Metodo_Pago || '—';
+      return `Reposición: ${motivo} · paga por ${pago}`;
+    }
+
     async function cargarSolicitudes() {
       let url = '/solicitudes-Entregadas';
       if (filtro.value) url += '?sucursal=' + encodeURIComponent(filtro.value);
@@ -109,7 +132,7 @@
       alerta.textContent = '';
 
       if (datos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="vacio">Aún no hay Cívicas entregadas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="vacio">Aún no hay Cívicas entregadas.</td></tr>';
         return;
       }
       tbody.innerHTML = datos.map((s) => `
@@ -118,6 +141,8 @@
           <td data-label="Apellido">${esc(s.Apellido)}</td>
           <td data-label="Cédula">${esc(s.Cedula)}</td>
           <td data-label="Punto de atención">${esc(s.Nombre_Sucursal)}</td>
+          <td data-label="Solicitud">${esc(describirSolicitud(s))}</td>
+          <td data-label="Tarifa">${esc(TARIFAS[s.Tipo_Tarifa] || 'Estándar')}</td>
           <td data-label="Estado"><span class="estado estado-${esc(s.Estado)}">${esc(s.Estado)}</span></td>
         </tr>`).join('');
     }

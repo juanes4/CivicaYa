@@ -100,7 +100,6 @@
       <button type="button" class="btn btn-secundario btn-bloque" id="btnCerrarCambio">Volver</button>
     </section>
 
-    <div id="avisoLlamada" class="no-imprimir"></div>
 
     <section id="noSolicitud" class="card ancha" hidden>
       <h2>Aún no tienes una solicitud</h2>
@@ -126,6 +125,10 @@
     let cita = null;
     let sucursal = '';
 
+    const MOTIVOS = { ROBO: 'Robo', PERDIDA: 'Pérdida', DANO: 'Daño' };
+    const METODOS_PAGO = { PSE: 'PSE, en línea', EFECTIVO: 'Efectivo, en el punto de atención' };
+    const TARIFAS = { ADULTO_MAYOR: 'Adulto mayor', DISCAPACIDAD: 'Persona con discapacidad' };
+
     function mostrarSolicitud(datos) {
       const vigente = datos.Estado === 'PENDIENTE' || datos.Estado === 'CONFIRMADO';
       sucursal = datos.Nombre_Sucursal;
@@ -139,6 +142,13 @@
         ? `<tr><th>Cita</th><td>${esc(formatearFecha(datos.Fecha_Cita))}, ${esc(formatearHora(datos.Hora_Cita))}</td></tr>
            <tr><th>Código de cita</th><td class="codigo-cita">${esc(datos.Codigo_Cita)}</td></tr>`
         : '<tr><th>Cita</th><td>Sin cita asignada. Elige una con «Cambiar día u hora».</td></tr>';
+      const filaReposicion = datos.Primera_Vez === 'NO'
+        ? `<tr><th>Motivo</th><td>${esc(MOTIVOS[datos.Motivo_Solicitud] || datos.Motivo_Solicitud)}</td></tr>
+           <tr><th>Forma de pago</th><td>${esc(METODOS_PAGO[datos.Metodo_Pago] || datos.Metodo_Pago)}</td></tr>`
+        : '';
+      const filaTarifa = TARIFAS[datos.Tipo_Tarifa]
+        ? `<tr><th>Tipo de tarifa</th><td>${esc(TARIFAS[datos.Tipo_Tarifa])}</td></tr>`
+        : '';
       el('datosSolicitud').innerHTML = `
         <tr><th>Nombre</th><td>${esc(datos.Nombre)}</td></tr>
         <tr><th>Apellido</th><td>${esc(datos.Apellido)}</td></tr>
@@ -146,6 +156,8 @@
         <tr><th>Correo</th><td>${esc(datos.Correo)}</td></tr>
         <tr><th>Punto de atención</th><td>${esc(datos.Nombre_Sucursal)}</td></tr>
         ${filaCita}
+        ${filaReposicion}
+        ${filaTarifa}
         <tr><th>Estado</th><td><span class="estado estado-${esc(datos.Estado)}">${esc(datos.Estado)}</span></td></tr>
         <tr><th>Código de solicitud</th><td class="codigo">${esc(datos.Codigo_Barras)}</td></tr>
       `;
@@ -200,7 +212,6 @@
       mostrarAlerta(alertaAcciones, ok ? 'exito' : 'error', datos.mensaje || 'No se pudo cancelar la solicitud.');
     });
 
-    crearAvisoLlamada(el('avisoLlamada'));
     cargarSolicitud().catch(() => mostrarAlerta(el('error'), 'error', 'No se pudo obtener la información de tu solicitud.'));
   </script>
 </body>
